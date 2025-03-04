@@ -8,7 +8,7 @@ function App() {
 
   const iniciarSimulacro = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/simulacro/5");
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
       setPreguntas(response.data);
       setRespuestas({}); // Resetear respuestas
       setPuntaje(null);
