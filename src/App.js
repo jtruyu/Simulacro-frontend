@@ -10,21 +10,21 @@ function App() {
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
       setPreguntas(response.data);
-      setRespuestas({}); // Resetear respuestas
+      setRespuestas({});
       setPuntaje(null);
     } catch (error) {
       console.error("Error al obtener preguntas", error);
     }
   };
 
-  const seleccionarRespuesta = (preguntaId, letra) => {
-    setRespuestas({ ...respuestas, [preguntaId]: letra });
+  const seleccionarRespuesta = (ejercicio, letra) => {
+    setRespuestas({ ...respuestas, [ejercicio]: letra });
   };
 
   const verificarRespuestas = () => {
     let correctas = 0;
     preguntas.forEach((pregunta) => {
-      if (respuestas[pregunta.id] === pregunta.Alt_Correcta) {
+      if (respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta) {
         correctas++;
       }
     });
@@ -39,24 +39,26 @@ function App() {
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
-            <div key={pregunta.id}>
-              <h2>{pregunta.Ejercicio}</h2>
+            <div key={pregunta.ejercicio}>
+              <h2>{pregunta.ejercicio}</h2>
 
               {/* Mostrar imagen si existe */}
-              {pregunta.Imagen && <img src={pregunta.Imagen} alt="Ejercicio" style={{ maxWidth: "100%" }} />}
+              {pregunta.imagen && (
+                <img src={pregunta.imagen} alt="Ejercicio" style={{ maxWidth: "100%" }} />
+              )}
 
               <ul>
-                {["A", "B", "C", "D", "E"].map((letra) => (
-                  <li key={letra}>
+                {pregunta.alternativas.map((alt) => (
+                  <li key={alt.letra}>
                     <label>
                       <input
                         type="radio"
-                        name={`pregunta-${pregunta.id}`}
-                        value={letra}
-                        checked={respuestas[pregunta.id] === letra}
-                        onChange={() => seleccionarRespuesta(pregunta.id, letra)}
+                        name={`pregunta-${pregunta.ejercicio}`}
+                        value={alt.letra}
+                        checked={respuestas[pregunta.ejercicio] === alt.letra}
+                        onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {letra}: {pregunta[letra]}
+                      {alt.letra}: {alt.texto}
                     </label>
                   </li>
                 ))}
