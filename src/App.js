@@ -24,7 +24,7 @@ function App() {
   const verificarRespuestas = () => {
     let correctas = 0;
     preguntas.forEach((pregunta) => {
-      if (respuestas[pregunta.id] === pregunta.respuesta_correcta) {
+      if (respuestas[pregunta.id] === pregunta.Alt_Correcta) {
         correctas++;
       }
     });
@@ -40,19 +40,23 @@ function App() {
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.id}>
-              <h2>{pregunta.enunciado}</h2>
+              <h2>{pregunta.Ejercicio}</h2>
+
+              {/* Mostrar imagen si existe */}
+              {pregunta.Imagen && <img src={pregunta.Imagen} alt="Ejercicio" style={{ maxWidth: "100%" }} />}
+
               <ul>
-                {pregunta.alternativas.map((alt) => (
-                  <li key={alt.letra}>
+                {["A", "B", "C", "D", "E"].map((letra) => (
+                  <li key={letra}>
                     <label>
                       <input
                         type="radio"
                         name={`pregunta-${pregunta.id}`}
-                        value={alt.letra}
-                        checked={respuestas[pregunta.id] === alt.letra}
-                        onChange={() => seleccionarRespuesta(pregunta.id, alt.letra)}
+                        value={letra}
+                        checked={respuestas[pregunta.id] === letra}
+                        onChange={() => seleccionarRespuesta(pregunta.id, letra)}
                       />
-                      {alt.letra}: {alt.texto}
+                      {letra}: {pregunta[letra]}
                     </label>
                   </li>
                 ))}
