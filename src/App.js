@@ -5,16 +5,27 @@ function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [puntaje, setPuntaje] = useState(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
   const iniciarSimulacro = async () => {
+    setCargando(true);
+    setError("");
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
-      setPreguntas(response.data);
+      if (response.data.error) {
+        setError(response.data.error);
+        setPreguntas([]);
+      } else {
+        setPreguntas(response.data);
+      }
       setRespuestas({});
       setPuntaje(null);
     } catch (error) {
       console.error("Error al obtener preguntas", error);
+      setError("No se pudieron cargar las preguntas. Inténtalo de nuevo.");
     }
+    setCargando(false);
   };
 
   const seleccionarRespuesta = (ejercicio, letra) => {
@@ -22,33 +33,36 @@ function App() {
   };
 
   const verificarRespuestas = () => {
-    let correctas = 0;
-    preguntas.forEach((pregunta) => {
-      if (respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta) {
-        correctas++;
-      }
-    });
+    if (preguntas.length === 0) return;
+
+    let correctas = preguntas.filter(
+      (pregunta) => respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta
+    ).length;
+
     setPuntaje(`${correctas} / ${preguntas.length}`);
   };
 
-  // Función para procesar ecuaciones LaTeX y corregir saltos de línea
+  // Formatear texto con LaTeX
   const formatearLaTeX = (texto) => {
     return texto
       .replace(/\n/g, "<br/>") // Corregir saltos de línea
       .replace(/\$(.*?)\$/g, "\\($1\\)"); // Asegurar compatibilidad con MathJax
   };
 
-  // Renderizar MathJax cada vez que cambian las preguntas
   useEffect(() => {
     if (window.MathJax) {
-      window.MathJax.typesetPromise();
+      window.MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
     }
   }, [preguntas]);
 
   return (
     <div>
       <h1>Simulacro de Examen</h1>
-      <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
+      <button onClick={iniciarSimulacro} disabled={cargando}>
+        {cargando ? "Cargando..." : "Iniciar Simulacro"}
+      </button>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {preguntas.length > 0 && (
         <div>
@@ -56,7 +70,6 @@ function App() {
             <div key={pregunta.ejercicio}>
               <h2 dangerouslySetInnerHTML={{ __html: formatearLaTeX(pregunta.ejercicio) }}></h2>
 
-              {/* Mostrar imagen si existe */}
               {pregunta.imagen && (
                 <img src={pregunta.imagen} alt="Ejercicio" style={{ maxWidth: "100%" }} />
               )}
