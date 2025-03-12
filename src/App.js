@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
@@ -31,6 +31,16 @@ function App() {
     setPuntaje(correctas + " / " + preguntas.length);
   };
 
+  // Función para procesar ecuaciones LaTeX
+  const formatearLaTeX = (texto) => texto.replaceAll("\\(", "$").replaceAll("\\)", "$");
+
+  // Renderizar MathJax cada vez que cambian las preguntas
+  useEffect(() => {
+    if (window.MathJax) {
+      window.MathJax.typesetPromise();
+    }
+  }, [preguntas]);
+
   return (
     <div>
       <h1>Simulacro de Examen</h1>
@@ -40,7 +50,7 @@ function App() {
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio}>
-              <h2>{pregunta.ejercicio}</h2>
+              <h2 dangerouslySetInnerHTML={{ __html: formatearLaTeX(pregunta.ejercicio) }}></h2>
 
               {/* Mostrar imagen si existe */}
               {pregunta.imagen && (
@@ -58,7 +68,7 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {alt.letra}: {alt.texto}
+                      {alt.letra}: <span dangerouslySetInnerHTML={{ __html: formatearLaTeX(alt.texto) }}></span>
                     </label>
                   </li>
                 ))}
