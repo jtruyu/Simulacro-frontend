@@ -13,12 +13,15 @@ function App() {
       setRespuestas({});
       setPuntaje(null);
     } catch (error) {
-      console.error("Error al obtener preguntas", error);
+      console.error("Error al obtener preguntas:", error);
     }
   };
 
   const seleccionarRespuesta = (ejercicio, letra) => {
-    setRespuestas({ ...respuestas, [ejercicio]: letra });
+    setRespuestas((prevRespuestas) => ({
+      ...prevRespuestas,
+      [ejercicio]: letra,
+    }));
   };
 
   const verificarRespuestas = () => {
@@ -34,7 +37,9 @@ function App() {
   // Renderizar MathJax cada vez que cambian las preguntas
   useEffect(() => {
     if (window.MathJax) {
-      window.MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado"))
+        .catch((err) => console.error("MathJax error:", err));
     }
   }, [preguntas]);
 
@@ -47,7 +52,7 @@ function App() {
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio}>
-              <h2>{pregunta.ejercicio}</h2>
+              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
 
               {/* Mostrar imagen si existe */}
               {pregunta.imagen && (
@@ -55,7 +60,7 @@ function App() {
               )}
 
               <ul>
-                {pregunta.alternativas.map((alt) => (
+                {pregunta.alternativas?.map((alt) => (
                   <li key={alt.letra}>
                     <label>
                       <input
