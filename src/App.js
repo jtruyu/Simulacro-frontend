@@ -28,11 +28,15 @@ function App() {
         correctas++;
       }
     });
-    setPuntaje(correctas + " / " + preguntas.length);
+    setPuntaje(`${correctas} / ${preguntas.length}`);
   };
 
-  // Función para procesar ecuaciones LaTeX
-  const formatearLaTeX = (texto) => texto.replaceAll("\\(", "$").replaceAll("\\)", "$");
+  // Función para procesar ecuaciones LaTeX y corregir saltos de línea
+  const formatearLaTeX = (texto) => {
+    return texto
+      .replace(/\n/g, "<br/>") // Corregir saltos de línea
+      .replace(/\$(.*?)\$/g, "\\($1\\)"); // Asegurar compatibilidad con MathJax
+  };
 
   // Renderizar MathJax cada vez que cambian las preguntas
   useEffect(() => {
