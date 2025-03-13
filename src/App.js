@@ -4,14 +4,14 @@ import axios from "axios";
 function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
-  const [resultados, setResultados] = useState({}); // Estado para mensajes de respuesta
+  const [resultados, setResultados] = useState({});
 
   const iniciarSimulacro = async () => {
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
       setPreguntas(response.data);
       setRespuestas({});
-      setResultados({}); // Reiniciar mensajes al iniciar un nuevo simulacro
+      setResultados({});
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
     }
@@ -25,7 +25,7 @@ function App() {
   };
 
   const verificarRespuestas = () => {
-    let nuevosResultados = {}; // Objeto para almacenar los mensajes
+    let nuevosResultados = {};
 
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
@@ -37,10 +37,9 @@ function App() {
       }
     });
 
-    setResultados(nuevosResultados); // Guardamos los mensajes
+    setResultados(nuevosResultados);
   };
 
-  // Renderizar MathJax cada vez que cambian las preguntas
   useEffect(() => {
     if (window.MathJax) {
       window.MathJax.typesetPromise()
@@ -50,24 +49,23 @@ function App() {
   }, [preguntas]);
 
   return (
-    <div>
+    <div className="container">
       <h1>Simulacro de Examen</h1>
       <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
 
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
-            <div key={pregunta.ejercicio}>
-              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+            <div key={pregunta.ejercicio} className="pregunta-container">
+              <h2 className="ejercicio-texto" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
 
-              {/* Mostrar imagen si existe */}
               {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" style={{ maxWidth: "100%" }} />
+                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
               )}
 
-              <ul>
+              <ul className="opciones-lista">
                 {pregunta.alternativas?.map((alt) => (
-                  <li key={alt.letra}>
+                  <li key={alt.letra} className="opcion">
                     <label>
                       <input
                         type="radio"
@@ -76,15 +74,14 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {alt.letra}: <span dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                      {alt.letra}: <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
                     </label>
                   </li>
                 ))}
               </ul>
 
-              {/* Mostrar mensaje de respuesta debajo de cada pregunta */}
               {resultados[pregunta.ejercicio] && (
-                <p>{resultados[pregunta.ejercicio]}</p>
+                <p className="resultado">{resultados[pregunta.ejercicio]}</p>
               )}
             </div>
           ))}
