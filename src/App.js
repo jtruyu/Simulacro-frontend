@@ -63,9 +63,12 @@ function App() {
                 <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
               </h2>
 
-              {/* Mostrar imagen si existe */}
+              {/* Mostrar imagen si existe y registrar en consola */}
               {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+                <>
+                  {console.log("Cargando imagen:", pregunta.imagen)}
+                  <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+                </>
               )}
 
               {/* Opciones de respuesta */}
