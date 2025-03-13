@@ -23,12 +23,14 @@ label {
 
 /* Estilos para las imágenes de los ejercicios */
 .imagen-ejercicio {
-  max-width: 80%; /* Ajusta el tamaño de la imagen en pantallas grandes */
+  max-width: 80%; /* Ajusta el tamaño en pantallas grandes */
   height: auto; /* Mantiene la proporción */
   display: block; /* Evita espacios extra */
-  margin: 10px auto; /* Centra la imagen */
+  margin: 10px 0; /* Elimina la alineación centrada */
   border-radius: 10px; /* Bordes redondeados */
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+  float: left; /* Alinea la imagen a la izquierda */
+  margin-right: 15px; /* Espacio entre la imagen y el texto */
 }
 
 /* Ajustes para pantallas pequeñas */
