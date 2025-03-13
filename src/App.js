@@ -58,20 +58,17 @@ function App() {
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio} className="pregunta-container">
               
-              {/* Ejercicio */}
+              {/* Enunciado del ejercicio */}
               <h2 className="ejercicio-texto">
                 <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
               </h2>
 
-              {/* Mostrar imagen si existe y registrar en consola */}
+              {/* Imagen (si existe) */}
               {pregunta.imagen && (
-                <>
-                  {console.log("Cargando imagen:", pregunta.imagen)}
-                  <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
-                </>
+                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
               )}
 
-              {/* Opciones de respuesta */}
+              {/* Opciones de respuesta (ahora forzadas debajo de la imagen) */}
               <ul className="opciones-lista">
                 {pregunta.alternativas?.map((alt) => (
                   <li key={alt.letra} className="opcion">
