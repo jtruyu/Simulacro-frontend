@@ -4,16 +4,14 @@ import axios from "axios";
 function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
-  const [puntaje, setPuntaje] = useState(null);
-  const [resultados, setResultados] = useState({}); // Nuevo estado para los mensajes
+  const [resultados, setResultados] = useState({}); // Estado para mensajes de respuesta
 
   const iniciarSimulacro = async () => {
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
       setPreguntas(response.data);
       setRespuestas({});
-      setPuntaje(null);
-      setResultados({}); // Resetear mensajes al iniciar nuevo simulacro
+      setResultados({}); // Reiniciar mensajes al iniciar un nuevo simulacro
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
     }
@@ -27,21 +25,18 @@ function App() {
   };
 
   const verificarRespuestas = () => {
-    let correctas = 0;
-    let nuevosResultados = {}; // Guardará los mensajes de cada pregunta
+    let nuevosResultados = {}; // Objeto para almacenar los mensajes
 
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
 
       if (respuestaUsuario === pregunta.respuesta_correcta) {
-        correctas++;
         nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
       } else {
         nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la respuesta correcta es (${pregunta.respuesta_correcta})`;
       }
     });
 
-    setPuntaje(`${correctas} / ${preguntas.length}`);
     setResultados(nuevosResultados); // Guardamos los mensajes
   };
 
@@ -87,7 +82,7 @@ function App() {
                 ))}
               </ul>
 
-              {/* Mostrar mensaje de respuesta */}
+              {/* Mostrar mensaje de respuesta debajo de cada pregunta */}
               {resultados[pregunta.ejercicio] && (
                 <p>{resultados[pregunta.ejercicio]}</p>
               )}
@@ -95,7 +90,6 @@ function App() {
           ))}
 
           <button onClick={verificarRespuestas}>Verificar Respuestas</button>
-          {puntaje !== null && <h2>Puntaje: {puntaje}</h2>}
         </div>
       )}
     </div>
