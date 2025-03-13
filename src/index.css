@@ -3,43 +3,53 @@ body {
   padding: 10px;
 }
 
+/* Contenedor de cada pregunta */
+.pregunta-container {
+  display: flex;
+  flex-direction: column; /* Fuerza que la imagen y opciones estén en columna */
+  gap: 10px; /* Espacio entre los elementos */
+  margin-bottom: 20px;
+}
+
 /* Estilos para el enunciado del ejercicio */
 .ejercicio-texto {
-  font-size: 1.1rem; /* Tamaño moderado */
-  font-weight: normal; /* No negrita */
+  font-size: 1.1rem;
+  font-weight: normal;
   margin-bottom: 10px;
 }
 
 /* Estilos para las opciones de respuesta */
-.opciones {
-  font-size: 1rem; /* Similar al enunciado */
-  margin-left: 20px;
+.opciones-lista {
+  list-style: none;
+  padding: 0;
+}
+
+.opcion {
+  font-size: 1rem;
+  margin-bottom: 5px;
 }
 
 label {
-  display: block; /* Opciones en bloque para evitar que se junten */
-  margin-bottom: 5px;
+  display: block;
 }
 
 /* Estilos para las imágenes de los ejercicios */
 .imagen-ejercicio {
   max-width: 80%; /* Ajusta el tamaño en pantallas grandes */
   height: auto; /* Mantiene la proporción */
-  display: block; /* Evita espacios extra */
-  margin: 10px 0; /* Elimina la alineación centrada */
+  display: block; /* Asegura que esté en una nueva línea */
+  margin: 10px auto; /* Centra la imagen */
   border-radius: 10px; /* Bordes redondeados */
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
-  float: left; /* Alinea la imagen a la izquierda */
-  margin-right: 15px; /* Espacio entre la imagen y el texto */
 }
 
 /* Ajustes para pantallas pequeñas */
 @media (max-width: 600px) {
   .ejercicio-texto {
-    font-size: 1rem; /* Reducir el tamaño en celulares */
+    font-size: 1rem;
   }
 
-  .opciones {
+  .opcion {
     font-size: 0.95rem;
   }
 
@@ -48,6 +58,6 @@ label {
   }
 
   .imagen-ejercicio {
-    max-width: 100%; /* La imagen se ajusta al ancho de la pantalla en móviles */
+    max-width: 100%; /* Ocupará el ancho completo en móviles */
   }
 }
