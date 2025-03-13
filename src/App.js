@@ -5,6 +5,7 @@ function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [puntaje, setPuntaje] = useState(null);
+  const [resultados, setResultados] = useState({}); // Nuevo estado para los mensajes
 
   const iniciarSimulacro = async () => {
     try {
@@ -12,6 +13,7 @@ function App() {
       setPreguntas(response.data);
       setRespuestas({});
       setPuntaje(null);
+      setResultados({}); // Resetear mensajes al iniciar nuevo simulacro
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
     }
@@ -26,12 +28,21 @@ function App() {
 
   const verificarRespuestas = () => {
     let correctas = 0;
+    let nuevosResultados = {}; // Guardará los mensajes de cada pregunta
+
     preguntas.forEach((pregunta) => {
-      if (respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta) {
+      const respuestaUsuario = respuestas[pregunta.ejercicio];
+
+      if (respuestaUsuario === pregunta.respuesta_correcta) {
         correctas++;
+        nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
+      } else {
+        nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la respuesta correcta es (${pregunta.respuesta_correcta})`;
       }
     });
+
     setPuntaje(`${correctas} / ${preguntas.length}`);
+    setResultados(nuevosResultados); // Guardamos los mensajes
   };
 
   // Renderizar MathJax cada vez que cambian las preguntas
@@ -75,6 +86,11 @@ function App() {
                   </li>
                 ))}
               </ul>
+
+              {/* Mostrar mensaje de respuesta */}
+              {resultados[pregunta.ejercicio] && (
+                <p>{resultados[pregunta.ejercicio]}</p>
+              )}
             </div>
           ))}
 
