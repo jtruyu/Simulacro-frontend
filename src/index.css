@@ -3,12 +3,14 @@ body {
   padding: 10px;
 }
 
+/* Estilos para el enunciado del ejercicio */
 .ejercicio-texto {
   font-size: 1.1rem; /* Tamaño moderado */
   font-weight: normal; /* No negrita */
   margin-bottom: 10px;
 }
 
+/* Estilos para las opciones de respuesta */
 .opciones {
   font-size: 1rem; /* Similar al enunciado */
   margin-left: 20px;
@@ -19,21 +21,31 @@ label {
   margin-bottom: 5px;
 }
 
-img {
-  max-width: 100%; /* Imagen ajustable en móviles */
-  height: auto;
+/* Estilos para las imágenes de los ejercicios */
+.imagen-ejercicio {
+  max-width: 80%; /* Ajusta el tamaño de la imagen en pantallas grandes */
+  height: auto; /* Mantiene la proporción */
+  display: block; /* Evita espacios extra */
+  margin: 10px auto; /* Centra la imagen */
+  border-radius: 10px; /* Bordes redondeados */
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
 }
 
+/* Ajustes para pantallas pequeñas */
 @media (max-width: 600px) {
   .ejercicio-texto {
     font-size: 1rem; /* Reducir el tamaño en celulares */
   }
-  
+
   .opciones {
     font-size: 0.95rem;
   }
 
   h1 {
     font-size: 1.5rem;
+  }
+
+  .imagen-ejercicio {
+    max-width: 100%; /* La imagen se ajusta al ancho de la pantalla en móviles */
   }
 }
