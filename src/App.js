@@ -49,30 +49,29 @@ function App() {
   }, [preguntas]);
 
   return (
-    <div>
+    <div className="container">
       <h1>Simulacro de Examen</h1>
       <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
 
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
-            <div key={pregunta.ejercicio}>
+            <div key={pregunta.ejercicio} className="pregunta-container">
+              
               {/* Ejercicio */}
-              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+              <h2 className="ejercicio-texto">
+                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+              </h2>
 
-              {/* Mostrar imagen si existe (si la columna imagen NO es NULL) */}
+              {/* Mostrar imagen si existe */}
               {pregunta.imagen && (
-                <img
-                  src={pregunta.imagen}
-                  alt="Gráfico del ejercicio"
-                  style={{ display: "block", maxWidth: "100%", margin: "10px auto" }}
-                />
+                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
               )}
 
               {/* Opciones de respuesta */}
-              <ul>
+              <ul className="opciones-lista">
                 {pregunta.alternativas?.map((alt) => (
-                  <li key={alt.letra}>
+                  <li key={alt.letra} className="opcion">
                     <label>
                       <input
                         type="radio"
@@ -81,14 +80,19 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {alt.letra}: <span dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                      <span className="texto-opcion">{alt.letra}: </span>
+                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
                     </label>
                   </li>
                 ))}
               </ul>
 
               {/* Mostrar resultado si ya se verificaron las respuestas */}
-              {resultados[pregunta.ejercicio] && <p>{resultados[pregunta.ejercicio]}</p>}
+              {resultados[pregunta.ejercicio] && (
+                <p className="resultado">
+                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
+                </p>
+              )}
             </div>
           ))}
 
