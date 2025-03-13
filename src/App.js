@@ -49,23 +49,30 @@ function App() {
   }, [preguntas]);
 
   return (
-    <div className="container">
+    <div>
       <h1>Simulacro de Examen</h1>
       <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
 
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
-            <div key={pregunta.ejercicio} className="pregunta-container">
-              <h2 className="ejercicio-texto" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+            <div key={pregunta.ejercicio}>
+              {/* Ejercicio */}
+              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
 
+              {/* Mostrar imagen si existe (si la columna imagen NO es NULL) */}
               {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+                <img
+                  src={pregunta.imagen}
+                  alt="Gráfico del ejercicio"
+                  style={{ display: "block", maxWidth: "100%", margin: "10px auto" }}
+                />
               )}
 
-              <ul className="opciones-lista">
+              {/* Opciones de respuesta */}
+              <ul>
                 {pregunta.alternativas?.map((alt) => (
-                  <li key={alt.letra} className="opcion">
+                  <li key={alt.letra}>
                     <label>
                       <input
                         type="radio"
@@ -74,15 +81,14 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {alt.letra}: <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                      {alt.letra}: <span dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
                     </label>
                   </li>
                 ))}
               </ul>
 
-              {resultados[pregunta.ejercicio] && (
-                <p className="resultado">{resultados[pregunta.ejercicio]}</p>
-              )}
+              {/* Mostrar resultado si ya se verificaron las respuestas */}
+              {resultados[pregunta.ejercicio] && <p>{resultados[pregunta.ejercicio]}</p>}
             </div>
           ))}
 
