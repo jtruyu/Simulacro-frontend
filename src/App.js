@@ -8,9 +8,8 @@ function App() {
   const [temas, setTemas] = useState([]);
   const [temasSeleccionados, setTemasSeleccionados] = useState([]);
 
-  // Obtener los temas desde la API
   useEffect(() => {
-    const fetchTemas = async () => {
+    const obtenerTemas = async () => {
       try {
         const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
         setTemas(response.data);
@@ -18,24 +17,26 @@ function App() {
         console.error("Error al obtener los temas:", error);
       }
     };
-    fetchTemas();
+
+    obtenerTemas();
   }, []);
 
-  // Manejar selección de temas
-  const handleTemaChange = (tema) => {
-    setTemasSeleccionados((prev) =>
-      prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]
-    );
-  };
-
-  const iniciarSimulacro = async () => {
+  const obtenerPregunta = async () => {
     try {
-      let url = "https://mi-proyecto-fastapi.onrender.com/simulacro/10";
-      if (temasSeleccionados.length > 0) {
-        const temasQuery = temasSeleccionados.join(",");
-        url += `?temas=${encodeURIComponent(temasQuery)}`;
-      }
-      const response = await axios.get(url);
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
+        params: { num_preguntas: 1, temas: temasSeleccionados },
+        paramsSerializer: (params) => {
+          return Object.keys(params)
+            .map((key) => {
+              if (Array.isArray(params[key])) {
+                return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
+              }
+              return `${key}=${encodeURIComponent(params[key])}`;
+            })
+            .join("&");
+        },
+      });
+
       setPreguntas(response.data);
       setRespuestas({});
       setResultados({});
@@ -53,54 +54,55 @@ function App() {
 
   const verificarRespuestas = () => {
     let nuevosResultados = {};
+
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
+
       if (respuestaUsuario === pregunta.respuesta_correcta) {
         nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
       } else {
         nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la respuesta correcta es (${pregunta.respuesta_correcta})`;
       }
     });
+
     setResultados(nuevosResultados);
   };
 
-  useEffect(() => {
-    if (window.MathJax) {
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado"))
-        .catch((err) => console.error("MathJax error:", err));
-    }
-  }, [preguntas]);
+  const toggleTema = (tema) => {
+    setTemasSeleccionados((prev) =>
+      prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]
+    );
+  };
 
   return (
     <div className="container">
       <h1>Simulacro de Examen</h1>
-      <div className="temas-container">
-        <h3>Selecciona los temas:</h3>
-        {temas.map((tema) => (
-          <label key={tema.id} className="tema-opcion">
-            <input
-              type="checkbox"
-              value={tema.nombre}
-              checked={temasSeleccionados.includes(tema.nombre)}
-              onChange={() => handleTemaChange(tema.nombre)}
-            />
-            {tema.nombre}
-          </label>
-        ))}
-      </div>
-      <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
+
+      <h2>Selecciona los temas:</h2>
+      {temas.map((tema) => (
+        <label key={tema}>
+          <input
+            type="checkbox"
+            value={tema}
+            checked={temasSeleccionados.includes(tema)}
+            onChange={() => toggleTema(tema)}
+          />
+          {tema}
+        </label>
+      ))}
+
+      <br />
+      <button onClick={obtenerPregunta}>Nueva Pregunta</button>
+
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio} className="pregunta-container">
-              <h2 className="ejercicio-texto">
-                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
-              </h2>
-              {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />}
-              <ul className="opciones-lista">
-                {pregunta.alternativas?.map((alt) => (
-                  <li key={alt.letra} className="opcion">
+              <h2>{pregunta.ejercicio}</h2>
+              {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" />}
+              <ul>
+                {pregunta.alternativas.map((alt) => (
+                  <li key={alt.letra}>
                     <label>
                       <input
                         type="radio"
@@ -109,17 +111,12 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      <span className="texto-opcion">{alt.letra}: </span>
-                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                      {alt.letra}: {alt.texto}
                     </label>
                   </li>
                 ))}
               </ul>
-              {resultados[pregunta.ejercicio] && (
-                <p className="resultado">
-                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
-                </p>
-              )}
+              {resultados[pregunta.ejercicio] && <p>{resultados[pregunta.ejercicio]}</p>}
             </div>
           ))}
           <button onClick={verificarRespuestas}>Verificar Respuestas</button>
