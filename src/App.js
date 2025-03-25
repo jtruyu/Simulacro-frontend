@@ -21,6 +21,14 @@ function App() {
     obtenerTemas();
   }, []);
 
+  useEffect(() => {
+    if (window.MathJax) {
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado"))
+        .catch((err) => console.error("MathJax error:", err));
+    }
+  }, [preguntas]);
+
   const obtenerPregunta = async () => {
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
@@ -99,13 +107,19 @@ function App() {
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio} className="pregunta-container">
               {/* Renderizar ecuaciones en el enunciado */}
-              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+              <h2 className="ejercicio-texto">
+                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+              </h2>
 
-              {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" />}
+              {/* Mostrar imagen si existe */}
+              {pregunta.imagen && (
+                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+              )}
 
-              <ul>
+              {/* Renderizar opciones de respuesta con ecuaciones */}
+              <ul className="opciones-lista">
                 {pregunta.alternativas.map((alt) => (
-                  <li key={alt.letra}>
+                  <li key={alt.letra} className="opcion">
                     <label>
                       <input
                         type="radio"
@@ -114,13 +128,19 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      <span dangerouslySetInnerHTML={{ __html: `${alt.letra}: ${alt.texto}` }}></span>
+                      <span className="texto-opcion">{alt.letra}: </span>
+                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
                     </label>
                   </li>
                 ))}
               </ul>
 
-              {resultados[pregunta.ejercicio] && <p>{resultados[pregunta.ejercicio]}</p>}
+              {/* Mostrar resultado después de verificar */}
+              {resultados[pregunta.ejercicio] && (
+                <p className="resultado">
+                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
+                </p>
+              )}
             </div>
           ))}
           <button onClick={verificarRespuestas}>Verificar Respuestas</button>
