@@ -5,10 +5,37 @@ function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [resultados, setResultados] = useState({});
+  const [temas, setTemas] = useState([]);
+  const [temasSeleccionados, setTemasSeleccionados] = useState([]);
+
+  // Obtener los temas desde la API
+  useEffect(() => {
+    const fetchTemas = async () => {
+      try {
+        const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
+        setTemas(response.data);
+      } catch (error) {
+        console.error("Error al obtener los temas:", error);
+      }
+    };
+    fetchTemas();
+  }, []);
+
+  // Manejar selección de temas
+  const handleTemaChange = (tema) => {
+    setTemasSeleccionados((prev) =>
+      prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]
+    );
+  };
 
   const iniciarSimulacro = async () => {
     try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro/1");
+      let url = "https://mi-proyecto-fastapi.onrender.com/simulacro/10";
+      if (temasSeleccionados.length > 0) {
+        const temasQuery = temasSeleccionados.join(",");
+        url += `?temas=${encodeURIComponent(temasQuery)}`;
+      }
+      const response = await axios.get(url);
       setPreguntas(response.data);
       setRespuestas({});
       setResultados({});
@@ -26,17 +53,14 @@ function App() {
 
   const verificarRespuestas = () => {
     let nuevosResultados = {};
-
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
-
       if (respuestaUsuario === pregunta.respuesta_correcta) {
         nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
       } else {
         nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la respuesta correcta es (${pregunta.respuesta_correcta})`;
       }
     });
-
     setResultados(nuevosResultados);
   };
 
@@ -51,24 +75,29 @@ function App() {
   return (
     <div className="container">
       <h1>Simulacro de Examen</h1>
+      <div className="temas-container">
+        <h3>Selecciona los temas:</h3>
+        {temas.map((tema) => (
+          <label key={tema.id} className="tema-opcion">
+            <input
+              type="checkbox"
+              value={tema.nombre}
+              checked={temasSeleccionados.includes(tema.nombre)}
+              onChange={() => handleTemaChange(tema.nombre)}
+            />
+            {tema.nombre}
+          </label>
+        ))}
+      </div>
       <button onClick={iniciarSimulacro}>Iniciar Simulacro</button>
-
       {preguntas.length > 0 && (
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio} className="pregunta-container">
-              
-              {/* Enunciado del ejercicio */}
               <h2 className="ejercicio-texto">
                 <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
               </h2>
-
-              {/* Imagen (si existe) */}
-              {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
-              )}
-
-              {/* Opciones de respuesta (ahora forzadas debajo de la imagen) */}
+              {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />}
               <ul className="opciones-lista">
                 {pregunta.alternativas?.map((alt) => (
                   <li key={alt.letra} className="opcion">
@@ -86,8 +115,6 @@ function App() {
                   </li>
                 ))}
               </ul>
-
-              {/* Mostrar resultado si ya se verificaron las respuestas */}
               {resultados[pregunta.ejercicio] && (
                 <p className="resultado">
                   <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
@@ -95,7 +122,6 @@ function App() {
               )}
             </div>
           ))}
-
           <button onClick={verificarRespuestas}>Verificar Respuestas</button>
         </div>
       )}
