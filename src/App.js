@@ -98,8 +98,11 @@ function App() {
         <div>
           {preguntas.map((pregunta) => (
             <div key={pregunta.ejercicio} className="pregunta-container">
-              <h2>{pregunta.ejercicio}</h2>
+              {/* Renderizar ecuaciones en el enunciado */}
+              <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+
               {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" />}
+
               <ul>
                 {pregunta.alternativas.map((alt) => (
                   <li key={alt.letra}>
@@ -111,11 +114,12 @@ function App() {
                         checked={respuestas[pregunta.ejercicio] === alt.letra}
                         onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                       />
-                      {alt.letra}: {alt.texto}
+                      <span dangerouslySetInnerHTML={{ __html: `${alt.letra}: ${alt.texto}` }}></span>
                     </label>
                   </li>
                 ))}
               </ul>
+
               {resultados[pregunta.ejercicio] && <p>{resultados[pregunta.ejercicio]}</p>}
             </div>
           ))}
