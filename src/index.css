@@ -49,7 +49,12 @@ label {
 /* Ajustes para pantallas pequeñas */
 @media (max-width: 600px) {
   .pregunta-container {
-    align-items: center; /* Centra la imagen solo en móviles */
+    align-items: start; /* Mantiene la alineación a la izquierda */
+  }
+
+  .imagen-ejercicio {
+    display: block;
+    margin: 10px auto; /* Solo la imagen estará centrada */
   }
 
   .ejercicio-texto {
