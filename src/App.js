@@ -12,7 +12,20 @@ function App() {
     const obtenerTemas = async () => {
       try {
         const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
-        setTemas(response.data);
+        
+        const ordenDeseado = [
+          "Sistema Internacional",
+          "Análisis dimensional",
+          "Vectores",
+          "Funciones",
+          "Cantidades cinemáticas",
+          "MRU"
+        ];
+
+        // Ordenar los temas según la lista deseada
+        const temasOrdenados = ordenDeseado.filter((tema) => response.data.includes(tema));
+
+        setTemas(temasOrdenados);
       } catch (error) {
         console.error("Error al obtener los temas:", error);
       }
