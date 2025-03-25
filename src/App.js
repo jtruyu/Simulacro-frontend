@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./App.css"; // Asegúrate de agregar estilos en tu CSS
 
 function App() {
   const [preguntas, setPreguntas] = useState([]);
@@ -83,69 +84,69 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <h1>Simulacro de Examen</h1>
+    <div className="app-container">
+      {/* Sidebar para selección de temas */}
+      <div className="sidebar">
+        <h2>Selecciona los temas:</h2>
+        {temas.map((tema) => (
+          <label key={tema} className="tema-checkbox">
+            <input
+              type="checkbox"
+              value={tema}
+              checked={temasSeleccionados.includes(tema)}
+              onChange={() => toggleTema(tema)}
+            />
+            {tema}
+          </label>
+        ))}
+        <button onClick={obtenerPregunta} className="boton-obtener">Nueva Pregunta</button>
+      </div>
 
-      <h2>Selecciona los temas:</h2>
-      {temas.map((tema) => (
-        <label key={tema}>
-          <input
-            type="checkbox"
-            value={tema}
-            checked={temasSeleccionados.includes(tema)}
-            onChange={() => toggleTema(tema)}
-          />
-          {tema}
-        </label>
-      ))}
+      {/* Contenido principal */}
+      <div className="contenido">
+        <h1>Simulacro de Examen</h1>
 
-      <br />
-      <button onClick={obtenerPregunta}>Nueva Pregunta</button>
+        {preguntas.length > 0 && (
+          <div>
+            {preguntas.map((pregunta) => (
+              <div key={pregunta.ejercicio} className="pregunta-container">
+                <h2 className="ejercicio-texto">
+                  <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+                </h2>
 
-      {preguntas.length > 0 && (
-        <div>
-          {preguntas.map((pregunta) => (
-            <div key={pregunta.ejercicio} className="pregunta-container">
-              {/* Renderizar ecuaciones en el enunciado */}
-              <h2 className="ejercicio-texto">
-                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
-              </h2>
+                {pregunta.imagen && (
+                  <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+                )}
 
-              {/* Mostrar imagen si existe */}
-              {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
-              )}
+                <ul className="opciones-lista">
+                  {pregunta.alternativas.map((alt) => (
+                    <li key={alt.letra} className="opcion">
+                      <label>
+                        <input
+                          type="radio"
+                          name={`pregunta-${pregunta.ejercicio}`}
+                          value={alt.letra}
+                          checked={respuestas[pregunta.ejercicio] === alt.letra}
+                          onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+                        />
+                        <span className="texto-opcion">{alt.letra}: </span>
+                        <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
 
-              {/* Renderizar opciones de respuesta con ecuaciones */}
-              <ul className="opciones-lista">
-                {pregunta.alternativas.map((alt) => (
-                  <li key={alt.letra} className="opcion">
-                    <label>
-                      <input
-                        type="radio"
-                        name={`pregunta-${pregunta.ejercicio}`}
-                        value={alt.letra}
-                        checked={respuestas[pregunta.ejercicio] === alt.letra}
-                        onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
-                      />
-                      <span className="texto-opcion">{alt.letra}: </span>
-                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Mostrar resultado después de verificar */}
-              {resultados[pregunta.ejercicio] && (
-                <p className="resultado">
-                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
-                </p>
-              )}
-            </div>
-          ))}
-          <button onClick={verificarRespuestas}>Verificar Respuestas</button>
-        </div>
-      )}
+                {resultados[pregunta.ejercicio] && (
+                  <p className="resultado">
+                    <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
+                  </p>
+                )}
+              </div>
+            ))}
+            <button onClick={verificarRespuestas} className="boton-verificar">Verificar Respuestas</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
