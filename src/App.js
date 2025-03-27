@@ -97,7 +97,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Simulacro de Examen</h1>
+      <h1>EDBOT: Simulador</h1>
 
       <h2>Selecciona los temas:</h2>
       {temas.map((tema) => (
