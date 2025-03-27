@@ -20,7 +20,8 @@ function App() {
           "Funciones",
           "Cantidades cinemáticas",
           "MRU",
-          "MRUV"
+          "MRUV",
+          "Caída libre"
         ];
 
         // Ordenar los temas según la lista deseada
