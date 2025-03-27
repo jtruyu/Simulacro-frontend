@@ -19,7 +19,8 @@ function App() {
           "Vectores",
           "Funciones",
           "Cantidades cinemáticas",
-          "MRU"
+          "MRU",
+          "MRUV"
         ];
 
         // Ordenar los temas según la lista deseada
