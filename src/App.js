@@ -22,6 +22,8 @@ function App() {
           "MRU",
           "MRUV",
           "Caída libre"
+          "Movimiento bidimensional",
+          "Movimiento de proyectil"
         ];
 
         // Ordenar los temas según la lista deseada
