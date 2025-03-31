@@ -21,7 +21,7 @@ function App() {
           "Cantidades cinemáticas",
           "MRU",
           "MRUV",
-          "Caída libre"
+          "Caída libre",
           "Movimiento bidimensional",
           "Movimiento de proyectil"
         ];
