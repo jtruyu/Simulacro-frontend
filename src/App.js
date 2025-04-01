@@ -7,6 +7,7 @@ function App() {
   const [resultados, setResultados] = useState({});
   const [temas, setTemas] = useState([]);
   const [temasSeleccionados, setTemasSeleccionados] = useState([]);
+  const [preguntasVistas, setPreguntasVistas] = useState([]);
 
   useEffect(() => {
     const obtenerTemas = async () => {
@@ -53,7 +54,11 @@ function App() {
   const obtenerPregunta = async () => {
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
-        params: { num_preguntas: 1, temas: temasSeleccionados },
+        params: { 
+          num_preguntas: 1, 
+          temas: temasSeleccionados,
+          preguntas_vistas: preguntasVistas // Enviamos las preguntas ya vistas
+        },
         paramsSerializer: (params) => {
           return Object.keys(params)
             .map((key) => {
@@ -66,9 +71,18 @@ function App() {
         },
       });
 
-      setPreguntas(response.data);
-      setRespuestas({});
-      setResultados({});
+      if (response.data) {
+        const nuevasPreguntas = response.data;
+        setPreguntas(nuevasPreguntas);
+        setRespuestas({});
+        setResultados({});
+        
+        // Actualizamos el estado de preguntas vistas con los IDs de las preguntas nuevas
+        setPreguntasVistas((prev) => [
+          ...prev,
+          ...nuevasPreguntas.map((p) => p.id),
+        ]);
+      }
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
     }
