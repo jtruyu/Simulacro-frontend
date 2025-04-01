@@ -23,7 +23,10 @@ function App() {
           "MRUV",
           "Caída libre",
           "Movimiento bidimensional",
-          "Movimiento de proyectil"
+          "Movimiento de proyectil",
+          "Cantidades cinemáticas angulares",
+          "MCU",
+          "MCUV"
         ];
 
         // Ordenar los temas según la lista deseada
