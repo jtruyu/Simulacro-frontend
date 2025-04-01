@@ -26,7 +26,8 @@ function App() {
           "Movimiento de proyectil",
           "Cantidades cinemáticas angulares",
           "MCU",
-          "MCUV"
+          "MCUV",
+          "Velocidad y aceleración en el movimiento circular"
         ];
 
         // Ordenar los temas según la lista deseada
