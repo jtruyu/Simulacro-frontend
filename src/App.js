@@ -2,18 +2,38 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [pregunta, setPregunta] = useState(null);
-  const [respuesta, setRespuesta] = useState("");
-  const [resultado, setResultado] = useState("");
+  const [preguntas, setPreguntas] = useState([]);
+  const [respuestas, setRespuestas] = useState({});
+  const [resultados, setResultados] = useState({});
   const [temas, setTemas] = useState([]);
   const [temasSeleccionados, setTemasSeleccionados] = useState([]);
-  const [userId, setUserId] = useState(() => Math.random().toString(36).substring(7)); // Generar ID único para la sesión
 
   useEffect(() => {
     const obtenerTemas = async () => {
       try {
         const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
-        setTemas(response.data);
+        
+        const ordenDeseado = [
+          "Sistema Internacional",
+          "Análisis dimensional",
+          "Vectores",
+          "Funciones",
+          "Cantidades cinemáticas",
+          "MRU",
+          "MRUV",
+          "Caída libre",
+          "Movimiento bidimensional",
+          "Movimiento de proyectil",
+          "Cantidades cinemáticas angulares",
+          "MCU",
+          "MCUV",
+          "Velocidad y aceleración en el movimiento circular"
+        ];
+
+        // Ordenar los temas según la lista deseada
+        const temasOrdenados = ordenDeseado.filter((tema) => response.data.includes(tema));
+
+        setTemas(temasOrdenados);
       } catch (error) {
         console.error("Error al obtener los temas:", error);
       }
@@ -24,39 +44,63 @@ function App() {
 
   useEffect(() => {
     if (window.MathJax) {
-      window.MathJax.typesetPromise();
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado"))
+        .catch((err) => console.error("MathJax error:", err));
     }
-  }, [pregunta]);
+  }, [preguntas]);
 
   const obtenerPregunta = async () => {
     try {
-      const response = await axios.get(`https://mi-proyecto-fastapi.onrender.com/siguiente_pregunta/${userId}`, {
-        params: { temas: temasSeleccionados },
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
+        params: { num_preguntas: 1, temas: temasSeleccionados },
         paramsSerializer: (params) => {
           return Object.keys(params)
-            .map((key) => (Array.isArray(params[key]) ? params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&") : `${key}=${encodeURIComponent(params[key])}`))
+            .map((key) => {
+              if (Array.isArray(params[key])) {
+                return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
+              }
+              return `${key}=${encodeURIComponent(params[key])}`;
+            })
             .join("&");
         },
       });
 
-      setPregunta(response.data);
-      setRespuesta("");
-      setResultado("");
+      setPreguntas(response.data);
+      setRespuestas({});
+      setResultados({});
     } catch (error) {
-      console.error("Error al obtener la pregunta:", error);
+      console.error("Error al obtener preguntas:", error);
     }
   };
 
-  const seleccionarRespuesta = (letra) => {
-    setRespuesta(letra);
+  const seleccionarRespuesta = (ejercicio, letra) => {
+    setRespuestas((prevRespuestas) => ({
+      ...prevRespuestas,
+      [ejercicio]: letra,
+    }));
   };
 
-  const verificarRespuesta = () => {
-    if (pregunta && respuesta === pregunta.respuesta_correcta) {
-      setResultado("✅ Respuesta correcta");
-    } else {
-      setResultado(`❌ Incorrecto, la respuesta correcta es (${pregunta?.respuesta_correcta})`);
-    }
+  const verificarRespuestas = () => {
+    let nuevosResultados = {};
+
+    preguntas.forEach((pregunta) => {
+      const respuestaUsuario = respuestas[pregunta.ejercicio];
+
+      if (respuestaUsuario === pregunta.respuesta_correcta) {
+        nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
+      } else {
+        nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la respuesta correcta es (${pregunta.respuesta_correcta})`;
+      }
+    });
+
+    setResultados(nuevosResultados);
+  };
+
+  const toggleTema = (tema) => {
+    setTemasSeleccionados((prev) =>
+      prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]
+    );
   };
 
   return (
@@ -70,7 +114,7 @@ function App() {
             type="checkbox"
             value={tema}
             checked={temasSeleccionados.includes(tema)}
-            onChange={() => setTemasSeleccionados((prev) => (prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]))}
+            onChange={() => toggleTema(tema)}
           />
           {tema}
         </label>
@@ -79,26 +123,48 @@ function App() {
       <br />
       <button onClick={obtenerPregunta}>Nueva Pregunta</button>
 
-      {pregunta && (
-        <div className="pregunta-container">
-          <h2 dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></h2>
+      {preguntas.length > 0 && (
+        <div>
+          {preguntas.map((pregunta) => (
+            <div key={pregunta.ejercicio} className="pregunta-container">
+              {/* Renderizar ecuaciones en el enunciado */}
+              <h2 className="ejercicio-texto">
+                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+              </h2>
 
-          {pregunta.imagen && <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />}
+              {/* Mostrar imagen si existe */}
+              {pregunta.imagen && (
+                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+              )}
 
-          <ul className="opciones-lista">
-            {pregunta.alternativas.map((alt) => (
-              <li key={alt.letra}>
-                <label>
-                  <input type="radio" name="pregunta" value={alt.letra} checked={respuesta === alt.letra} onChange={() => seleccionarRespuesta(alt.letra)} />
-                  <span dangerouslySetInnerHTML={{ __html: `${alt.letra}: ${alt.texto}` }}></span>
-                </label>
-              </li>
-            ))}
-          </ul>
+              {/* Renderizar opciones de respuesta con ecuaciones */}
+              <ul className="opciones-lista">
+                {pregunta.alternativas.map((alt) => (
+                  <li key={alt.letra} className="opcion">
+                    <label>
+                      <input
+                        type="radio"
+                        name={`pregunta-${pregunta.ejercicio}`}
+                        value={alt.letra}
+                        checked={respuestas[pregunta.ejercicio] === alt.letra}
+                        onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+                      />
+                      <span className="texto-opcion">{alt.letra}: </span>
+                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
 
-          <button onClick={verificarRespuesta}>Verificar Respuesta</button>
-
-          {resultado && <p>{resultado}</p>}
+              {/* Mostrar resultado después de verificar */}
+              {resultados[pregunta.ejercicio] && (
+                <p className="resultado">
+                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
+                </p>
+              )}
+            </div>
+          ))}
+          <button onClick={verificarRespuestas}>Verificar Respuestas</button>
         </div>
       )}
     </div>
