@@ -104,18 +104,27 @@ function App() {
     return `Pregunta ${numeroPregunta + 1} de ${preguntas.length}`;
   };
 
+  const renderBarraProgreso = () => {
+    const porcentaje = ((numeroPregunta + 1) / preguntas.length) * 100;
+    return <div className="barra-progreso" style={{ width: `${porcentaje}%` }}></div>;
+  };
+
   return (
     <div className="container">
       <h1>EDBOT: Simulador</h1>
 
-      <div className="barra-progreso">
+      {/* Barra de progreso */}
+      <div className="barra-progreso-container">
         {mostrarBarraProgreso()}
+        {renderBarraProgreso()}
       </div>
 
+      {/* Temporizador */}
       <div className="temporizador">
         Tiempo: {Math.floor(temporalizador / 60)}:{temporalizador % 60 < 10 ? `0${temporalizador % 60}` : temporalizador % 60}
       </div>
 
+      {/* Pregunta y opciones */}
       {!simulacroTerminado && preguntas.length > 0 && (
         <div>
           <CSSTransition
@@ -124,7 +133,6 @@ function App() {
             classNames="fade"
           >
             <div key={preguntas[numeroPregunta].ejercicio} className="pregunta-container">
-              {/* Renderizar ecuaciones en el enunciado */}
               <h2 className="ejercicio-texto">
                 <span dangerouslySetInnerHTML={{ __html: preguntas[numeroPregunta].ejercicio }}></span>
               </h2>
@@ -134,7 +142,7 @@ function App() {
                 <img src={preguntas[numeroPregunta].imagen} alt="Ejercicio" className="imagen-ejercicio" />
               )}
 
-              {/* Renderizar opciones de respuesta con ecuaciones */}
+              {/* Opciones de respuesta */}
               <ul className="opciones-lista">
                 {preguntas[numeroPregunta].alternativas.map((alt) => (
                   <li key={alt.letra} className="opcion">
@@ -155,6 +163,7 @@ function App() {
             </div>
           </CSSTransition>
 
+          {/* Botón siguiente o finalizar */}
           <div className="botones">
             {numeroPregunta < preguntas.length - 1 ? (
               <button onClick={siguientePregunta}>Siguiente Pregunta</button>
@@ -165,6 +174,7 @@ function App() {
         </div>
       )}
 
+      {/* Resultados al finalizar */}
       {simulacroTerminado && (
         <div>
           <h2>Resumen de Resultados</h2>
