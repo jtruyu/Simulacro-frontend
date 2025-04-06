@@ -13,7 +13,8 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
     "react-latex-next": "^2.0.0",
-    "react-transition-group": "^4.4.2"
+    "react-transition-group": "^4.4.2",
+    "framer-motion": "^10.10.0"  // Esta es la línea que se debe agregar
   },
   "scripts": {
     "start": "react-scripts start",
