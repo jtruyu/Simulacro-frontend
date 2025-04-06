@@ -36,3 +36,86 @@
     transform: rotate(360deg);
   }
 }
+
+/* Estilo para la pregunta */
+.pregunta-container {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.pregunta-container-enter {
+  opacity: 0;
+}
+
+.pregunta-container-enter-active {
+  opacity: 1;
+}
+
+.pregunta-container-exit {
+  opacity: 1;
+}
+
+.pregunta-container-exit-active {
+  opacity: 0;
+}
+
+/* Barra de progreso */
+.barra-progreso {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Temporizador */
+.temporizador {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+/* Botones de acción */
+.botones button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.botones button:hover {
+  background-color: #45a049;
+}
+
+/* Estilos adicionales para las opciones de respuesta */
+.opciones-lista {
+  list-style: none;
+  padding: 0;
+}
+
+.opcion {
+  margin: 5px 0;
+}
+
+.texto-opcion {
+  font-size: 16px;
+}
+
+/* Ajustes visuales para el contenedor de la simulación */
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
