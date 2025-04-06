@@ -9,7 +9,7 @@ function App() {
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [cargando, setCargando] = useState(false);
   const [pantalla, setPantalla] = useState("inicio"); // inicio, simulacro, resultados
-  const [tiempo, setTiempo] = useState(60 * 60); // 60 minutos en segundos
+  const [tiempo, setTiempo] = useState(40 * 60); // 60 minutos en segundos
   const [tiempoActivo, setTiempoActivo] = useState(false);
 
   // Controlar el temporizador
