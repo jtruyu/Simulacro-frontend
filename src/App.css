@@ -1,69 +1,17 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Estilo para la pregunta */
-.pregunta-container {
+/* Animación de fade */
+.fade-enter {
   opacity: 0;
+}
+.fade-enter-active {
+  opacity: 1;
   transition: opacity 0.5s ease-in-out;
 }
-
-.pregunta-container-enter {
-  opacity: 0;
-}
-
-.pregunta-container-enter-active {
+.fade-exit {
   opacity: 1;
 }
-
-.pregunta-container-exit {
-  opacity: 1;
-}
-
-.pregunta-container-exit-active {
+.fade-exit-active {
   opacity: 0;
-}
-
-/* Barra de progreso */
-.barra-progreso {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Temporizador */
@@ -77,9 +25,11 @@
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
+  z-index: 1000;
 }
 
-/* Botones de acción */
+/* Botones */
+.btn-iniciar,
 .botones button {
   background-color: #4CAF50;
   color: white;
@@ -90,26 +40,12 @@
   font-size: 16px;
   border-radius: 5px;
 }
-
+.btn-iniciar:hover,
 .botones button:hover {
   background-color: #45a049;
 }
 
-/* Estilos adicionales para las opciones de respuesta */
-.opciones-lista {
-  list-style: none;
-  padding: 0;
-}
-
-.opcion {
-  margin: 5px 0;
-}
-
-.texto-opcion {
-  font-size: 16px;
-}
-
-/* Ajustes visuales para el contenedor de la simulación */
+/* Contenedor */
 .container {
   max-width: 800px;
   margin: 20px auto;
@@ -117,5 +53,24 @@
   background-color: white;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+  text-align: left;
 }
 
+/* Texto e imagen */
+.ejercicio-texto {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.imagen-ejercicio {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Progreso */
+.barra-progreso {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
