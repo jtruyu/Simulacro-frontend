@@ -1,47 +1,66 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { CSSTransition } from "react-transition-group";  // Importar CSSTransition para animación
 
 function App() {
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [resultados, setResultados] = useState({});
-  const [temas, setTemas] = useState([]);
-  const [temasSeleccionados, setTemasSeleccionados] = useState([]);
   const [preguntasVistas, setPreguntasVistas] = useState([]);
+  const [numeroPregunta, setNumeroPregunta] = useState(0);  // Número de la pregunta actual
+  const [temporalizador, setTemporalizador] = useState(0);  // Temporizador
+  const [simulacroTerminado, setSimulacroTerminado] = useState(false);
+
+  // Temporizador para contar el tiempo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!simulacroTerminado) {
+        setTemporalizador((prev) => prev + 1);  // Sumar un segundo
+      }
+    }, 1000); // Cada segundo
+
+    return () => clearInterval(timer); // Limpiar intervalo al desmontar
+  }, [simulacroTerminado]);
 
   useEffect(() => {
-    const obtenerTemas = async () => {
+    const obtenerPregunta = async () => {
       try {
-        const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
-        
-        const ordenDeseado = [
-          "Sistema Internacional",
-          "Análisis dimensional",
-          "Vectores",
-          "Funciones",
-          "Cantidades cinemáticas",
-          "MRU",
-          "MRUV",
-          "Caída libre",
-          "Movimiento bidimensional",
-          "Movimiento de proyectil",
-          "Cantidades cinemáticas angulares",
-          "MCU",
-          "MCUV",
-          "Velocidad y aceleración en el movimiento circular"
-        ];
+        const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
+          params: { 
+            num_preguntas: 10,
+            preguntas_vistas: preguntasVistas 
+          },
+          paramsSerializer: (params) => {
+            return Object.keys(params)
+              .map((key) => {
+                if (Array.isArray(params[key])) {
+                  return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
+                }
+                return `${key}=${encodeURIComponent(params[key])}`;
+              })
+              .join("&");
+          },
+        });
 
-        // Ordenar los temas según la lista deseada
-        const temasOrdenados = ordenDeseado.filter((tema) => response.data.includes(tema));
+        if (response.data) {
+          const nuevasPreguntas = response.data;
+          setPreguntas(nuevasPreguntas);
+          setRespuestas({});
+          setResultados({});
+          setNumeroPregunta(0);  // Empezamos desde la primera pregunta
 
-        setTemas(temasOrdenados);
+          setPreguntasVistas((prev) => [
+            ...prev,
+            ...nuevasPreguntas.map((p) => p.id),
+          ]);
+        }
       } catch (error) {
-        console.error("Error al obtener los temas:", error);
+        console.error("Error al obtener preguntas:", error);
       }
     };
 
-    obtenerTemas();
-  }, []);
+    obtenerPregunta();
+  }, [preguntasVistas]);
 
   useEffect(() => {
     if (window.MathJax) {
@@ -50,43 +69,6 @@ function App() {
         .catch((err) => console.error("MathJax error:", err));
     }
   }, [preguntas]);
-
-  const obtenerPregunta = async () => {
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
-        params: { 
-          num_preguntas: 1, 
-          temas: temasSeleccionados,
-          preguntas_vistas: preguntasVistas // Enviamos las preguntas ya vistas
-        },
-        paramsSerializer: (params) => {
-          return Object.keys(params)
-            .map((key) => {
-              if (Array.isArray(params[key])) {
-                return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
-              }
-              return `${key}=${encodeURIComponent(params[key])}`;
-            })
-            .join("&");
-        },
-      });
-
-      if (response.data) {
-        const nuevasPreguntas = response.data;
-        setPreguntas(nuevasPreguntas);
-        setRespuestas({});
-        setResultados({});
-        
-        // Actualizamos el estado de preguntas vistas con los IDs de las preguntas nuevas
-        setPreguntasVistas((prev) => [
-          ...prev,
-          ...nuevasPreguntas.map((p) => p.id),
-        ]);
-      }
-    } catch (error) {
-      console.error("Error al obtener preguntas:", error);
-    }
-  };
 
   const seleccionarRespuesta = (ejercicio, letra) => {
     setRespuestas((prevRespuestas) => ({
@@ -109,59 +91,60 @@ function App() {
     });
 
     setResultados(nuevosResultados);
+    setSimulacroTerminado(true);  // Marcamos el simulacro como terminado
   };
 
-  const toggleTema = (tema) => {
-    setTemasSeleccionados((prev) =>
-      prev.includes(tema) ? prev.filter((t) => t !== tema) : [...prev, tema]
-    );
+  const siguientePregunta = () => {
+    if (numeroPregunta < preguntas.length - 1) {
+      setNumeroPregunta(numeroPregunta + 1);  // Avanzar a la siguiente pregunta
+    }
+  };
+
+  const mostrarBarraProgreso = () => {
+    return `Pregunta ${numeroPregunta + 1} de ${preguntas.length}`;
   };
 
   return (
     <div className="container">
       <h1>EDBOT: Simulador</h1>
 
-      <h2>Selecciona los temas:</h2>
-      {temas.map((tema) => (
-        <label key={tema}>
-          <input
-            type="checkbox"
-            value={tema}
-            checked={temasSeleccionados.includes(tema)}
-            onChange={() => toggleTema(tema)}
-          />
-          {tema}
-        </label>
-      ))}
+      <div className="barra-progreso">
+        {mostrarBarraProgreso()}
+      </div>
 
-      <br />
-      <button onClick={obtenerPregunta}>Nueva Pregunta</button>
+      <div className="temporizador">
+        Tiempo: {Math.floor(temporalizador / 60)}:{temporalizador % 60 < 10 ? `0${temporalizador % 60}` : temporalizador % 60}
+      </div>
 
-      {preguntas.length > 0 && (
+      {!simulacroTerminado && preguntas.length > 0 && (
         <div>
-          {preguntas.map((pregunta) => (
-            <div key={pregunta.ejercicio} className="pregunta-container">
+          <CSSTransition
+            key={preguntas[numeroPregunta].ejercicio}
+            timeout={500}
+            classNames="fade"
+          >
+            <div key={preguntas[numeroPregunta].ejercicio} className="pregunta-container">
               {/* Renderizar ecuaciones en el enunciado */}
               <h2 className="ejercicio-texto">
-                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+                <span dangerouslySetInnerHTML={{ __html: preguntas[numeroPregunta].ejercicio }}></span>
               </h2>
 
               {/* Mostrar imagen si existe */}
-              {pregunta.imagen && (
-                <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+              {preguntas[numeroPregunta].imagen && (
+                <img src={preguntas[numeroPregunta].imagen} alt="Ejercicio" className="imagen-ejercicio" />
               )}
 
               {/* Renderizar opciones de respuesta con ecuaciones */}
               <ul className="opciones-lista">
-                {pregunta.alternativas.map((alt) => (
+                {preguntas[numeroPregunta].alternativas.map((alt) => (
                   <li key={alt.letra} className="opcion">
                     <label>
                       <input
                         type="radio"
-                        name={`pregunta-${pregunta.ejercicio}`}
+                        name={`pregunta-${preguntas[numeroPregunta].ejercicio}`}
                         value={alt.letra}
-                        checked={respuestas[pregunta.ejercicio] === alt.letra}
-                        onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+                        checked={respuestas[preguntas[numeroPregunta].ejercicio] === alt.letra}
+                        onChange={() => seleccionarRespuesta(preguntas[numeroPregunta].ejercicio, alt.letra)}
                       />
                       <span className="texto-opcion">{alt.letra}: </span>
                       <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
@@ -169,16 +152,29 @@ function App() {
                   </li>
                 ))}
               </ul>
-
-              {/* Mostrar resultado después de verificar */}
-              {resultados[pregunta.ejercicio] && (
-                <p className="resultado">
-                  <span dangerouslySetInnerHTML={{ __html: resultados[pregunta.ejercicio] }}></span>
-                </p>
-              )}
             </div>
-          ))}
-          <button onClick={verificarRespuestas}>Verificar Respuestas</button>
+          </CSSTransition>
+
+          <div className="botones">
+            {numeroPregunta < preguntas.length - 1 ? (
+              <button onClick={siguientePregunta}>Siguiente Pregunta</button>
+            ) : (
+              <button onClick={verificarRespuestas}>Finalizar y Ver Resultados</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {simulacroTerminado && (
+        <div>
+          <h2>Resumen de Resultados</h2>
+          <ul>
+            {Object.entries(resultados).map(([ejercicio, resultado]) => (
+              <li key={ejercicio}>
+                {ejercicio}: {resultado}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
