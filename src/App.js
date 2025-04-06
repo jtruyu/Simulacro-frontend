@@ -119,6 +119,13 @@ function App() {
     return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
 
+  // UseEffect para renderizar las ecuaciones con MathJax
+  useEffect(() => {
+    if (window.MathJax) {
+      window.MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
+    }
+  }, [preguntas]);
+
   return (
     <div className="container">
       <h1>EDBOT: Simulador</h1>
