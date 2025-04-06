@@ -49,7 +49,7 @@ useEffect(() => {
     setRespuestas({});
     setResultados({});
     setPreguntaActual(0);
-    setTiempo(60 * 60); // Reiniciar el tiempo a 60 minutos
+    setTiempo(40 * 60); // Reiniciar el tiempo a 60 minutos
     setTiempoActivo(true);
     setPantalla("simulacro");
     
