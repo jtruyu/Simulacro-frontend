@@ -1,181 +1,77 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { CSSTransition } from "react-transition-group";
-import "./App.css"; // Puedes poner estilos para .fade, .barra-progreso, etc.
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 function App() {
+  const [iniciado, setIniciado] = useState(false);
+  const [preguntaActual, setPreguntaActual] = useState(0);
+  const [tiempoRestante, setTiempoRestante] = useState(600); // 10 min
   const [preguntas, setPreguntas] = useState([]);
-  const [respuestas, setRespuestas] = useState({});
-  const [resultados, setResultados] = useState({});
-  const [preguntasVistas, setPreguntasVistas] = useState([]);
-  const [numeroPregunta, setNumeroPregunta] = useState(0);
-  const [temporalizador, setTemporalizador] = useState(0);
-  const [simulacroTerminado, setSimulacroTerminado] = useState(false);
-  const [simulacroIniciado, setSimulacroIniciado] = useState(false); // NUEVO
 
-  // ⏱ Temporizador solo cuando el simulacro ha comenzado
+  // Cargar preguntas de ejemplo
   useEffect(() => {
-    let timer;
-    if (simulacroIniciado && !simulacroTerminado) {
-      timer = setInterval(() => {
-        setTemporalizador((prev) => prev + 1);
+    const ejemploPreguntas = [
+      { id: 1, texto: '¿Cuál es la velocidad de la luz?', imagen: null },
+      { id: 2, texto: '¿Quién formuló la ley de la gravedad?', imagen: null },
+    ];
+    setPreguntas(ejemploPreguntas);
+  }, []);
+
+  // Temporizador
+  useEffect(() => {
+    let intervalo = null;
+    if (iniciado && tiempoRestante > 0) {
+      intervalo = setInterval(() => {
+        setTiempoRestante(t => t - 1);
       }, 1000);
+    } else {
+      clearInterval(intervalo);
     }
-    return () => clearInterval(timer);
-  }, [simulacroIniciado, simulacroTerminado]);
+    return () => clearInterval(intervalo);
+  }, [iniciado, tiempoRestante]);
 
-  // 👇 Función que se llama al hacer clic en "Iniciar Simulacro"
-  const iniciarSimulacro = async () => {
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
-        params: {
-          num_preguntas: 10,
-          preguntas_vistas: preguntasVistas,
-        },
-        paramsSerializer: (params) => {
-          return Object.keys(params)
-            .map((key) => {
-              if (Array.isArray(params[key])) {
-                return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
-              }
-              return `${key}=${encodeURIComponent(params[key])}`;
-            })
-            .join("&");
-        },
-      });
-
-      if (response.data) {
-        const nuevasPreguntas = response.data;
-        setPreguntas(nuevasPreguntas);
-        setRespuestas({});
-        setResultados({});
-        setNumeroPregunta(0);
-        setTemporalizador(0);
-        setSimulacroTerminado(false);
-        setSimulacroIniciado(true); // Activar simulacro
-
-        setPreguntasVistas((prev) => [...prev, ...nuevasPreguntas.map((p) => p.id)]);
-      }
-    } catch (error) {
-      console.error("Error al obtener preguntas:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (window.MathJax) {
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado"))
-        .catch((err) => console.error("MathJax error:", err));
-    }
-  }, [preguntas, numeroPregunta]);
-
-  const seleccionarRespuesta = (ejercicio, letra) => {
-    setRespuestas((prev) => ({
-      ...prev,
-      [ejercicio]: letra,
-    }));
-  };
-
-  const verificarRespuestas = () => {
-    const nuevosResultados = {};
-    preguntas.forEach((pregunta) => {
-      const r = respuestas[pregunta.ejercicio];
-      if (r === pregunta.respuesta_correcta) {
-        nuevosResultados[pregunta.ejercicio] = "✅ Respuesta correcta";
-      } else {
-        nuevosResultados[pregunta.ejercicio] = `❌ Incorrecto, la correcta es (${pregunta.respuesta_correcta})`;
-      }
-    });
-    setResultados(nuevosResultados);
-    setSimulacroTerminado(true);
+  const iniciarSimulacro = () => {
+    setIniciado(true);
+    setTiempoRestante(600); // 10 minutos
+    setPreguntaActual(0);
   };
 
   const siguientePregunta = () => {
-    if (numeroPregunta < preguntas.length - 1) {
-      setNumeroPregunta((prev) => prev + 1);
+    if (preguntaActual < preguntas.length - 1) {
+      setPreguntaActual(p => p + 1);
     }
   };
 
-  const mostrarBarraProgreso = () => {
-    return `Pregunta ${numeroPregunta + 1} de ${preguntas.length}`;
-  };
-
   return (
-    <div className="container">
-      <h1>EDBOT: Simulador</h1>
+    <div className="App">
+      {iniciado && <div className="temporizador">{`Tiempo restante: ${Math.floor(tiempoRestante / 60)}:${String(tiempoRestante % 60).padStart(2, '0')}`}</div>}
 
-      {!simulacroIniciado && (
-        <button onClick={iniciarSimulacro} className="btn-iniciar">
-          Iniciar Simulacro
-        </button>
-      )}
-
-      {simulacroIniciado && !simulacroTerminado && preguntas.length > 0 && (
-        <>
-          <div className="barra-progreso" style={{ marginBottom: "10px", fontWeight: "bold" }}>
-            {mostrarBarraProgreso()}
-          </div>
-
-          <div className="temporizador">
-            Tiempo: {Math.floor(temporalizador / 60)}:{temporalizador % 60 < 10 ? `0${temporalizador % 60}` : temporalizador % 60}
-          </div>
-
-          <CSSTransition
-            key={preguntas[numeroPregunta].ejercicio}
-            timeout={500}
-            classNames="fade"
-          >
-            <div className="pregunta-container">
-              <h2 className="ejercicio-texto">
-                <span dangerouslySetInnerHTML={{ __html: preguntas[numeroPregunta].ejercicio }} />
-              </h2>
-
-              {preguntas[numeroPregunta].imagen && (
-                <img src={preguntas[numeroPregunta].imagen} alt="Ejercicio" className="imagen-ejercicio" />
-              )}
-
-              <ul className="opciones-lista">
-                {preguntas[numeroPregunta].alternativas.map((alt) => (
-                  <li key={alt.letra} className="opcion">
-                    <label>
-                      <input
-                        type="radio"
-                        name={`pregunta-${preguntas[numeroPregunta].ejercicio}`}
-                        value={alt.letra}
-                        checked={respuestas[preguntas[numeroPregunta].ejercicio] === alt.letra}
-                        onChange={() => seleccionarRespuesta(preguntas[numeroPregunta].ejercicio, alt.letra)}
-                      />
-                      <span className="texto-opcion">{alt.letra}: </span>
-                      <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }} />
-                    </label>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="botones" style={{ marginTop: "15px" }}>
-                {numeroPregunta < preguntas.length - 1 ? (
-                  <button onClick={siguientePregunta}>Siguiente Pregunta</button>
-                ) : (
-                  <button onClick={verificarRespuestas}>Finalizar y Ver Resultados</button>
-                )}
-              </div>
+      <div className="container">
+        {!iniciado ? (
+          <button className="btn-iniciar" onClick={iniciarSimulacro}>Iniciar Simulacro</button>
+        ) : (
+          <>
+            <div className="barra-progreso">
+              Pregunta {preguntaActual + 1} de {preguntas.length}
             </div>
-          </CSSTransition>
-        </>
-      )}
 
-      {simulacroTerminado && (
-        <div>
-          <h2>Resumen de Resultados</h2>
-          <ul>
-            {Object.entries(resultados).map(([ejercicio, resultado]) => (
-              <li key={ejercicio}>
-                {ejercicio}: {resultado}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+            <TransitionGroup>
+              <CSSTransition key={preguntas[preguntaActual].id} timeout={500} classNames="fade">
+                <div className="pregunta-container">
+                  <div className="ejercicio-texto">{preguntas[preguntaActual].texto}</div>
+                  {preguntas[preguntaActual].imagen && (
+                    <img src={preguntas[preguntaActual].imagen} alt="Ejercicio" className="imagen-ejercicio" />
+                  )}
+                </div>
+              </CSSTransition>
+            </TransitionGroup>
+
+            <div className="botones">
+              <button onClick={siguientePregunta}>Siguiente</button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
