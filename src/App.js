@@ -35,6 +35,15 @@ function App() {
     }
   }, [preguntaActual, preguntas]);
 
+  // Renderizar MathJax en la pantalla de resultados
+useEffect(() => {
+  if (pantalla === "resultados" && window.MathJax) {
+    window.MathJax.typesetPromise()
+      .then(() => console.log("MathJax renderizado en resultados"))
+      .catch((err) => console.error("MathJax error en resultados:", err));
+  }
+}, [pantalla]);
+  
   const iniciarSimulacro = async () => {
     setCargando(true);
     setRespuestas({});
