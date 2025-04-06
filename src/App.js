@@ -23,19 +23,10 @@ function App() {
       try {
         const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/temas");
         const ordenDeseado = [
-          "Sistema Internacional",
-          "Análisis dimensional",
-          "Vectores",
-          "Funciones",
-          "Cantidades cinemáticas",
-          "MRU",
-          "MRUV",
-          "Caída libre",
-          "Movimiento bidimensional",
-          "Movimiento de proyectil",
-          "Cantidades cinemáticas angulares",
-          "MCU",
-          "MCUV",
+          "Sistema Internacional", "Análisis dimensional", "Vectores", "Funciones",
+          "Cantidades cinemáticas", "MRU", "MRUV", "Caída libre",
+          "Movimiento bidimensional", "Movimiento de proyectil",
+          "Cantidades cinemáticas angulares", "MCU", "MCUV",
           "Velocidad y aceleración en el movimiento circular"
         ];
         const temasOrdenados = ordenDeseado.filter((tema) => response.data.includes(tema));
@@ -56,16 +47,13 @@ function App() {
           temas: temasSeleccionados,
           preguntas_vistas: preguntasVistas
         },
-        paramsSerializer: (params) => {
-          return Object.keys(params)
-            .map((key) => {
-              if (Array.isArray(params[key])) {
-                return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
-              }
-              return `${key}=${encodeURIComponent(params[key])}`;
-            })
-            .join("&");
-        },
+        paramsSerializer: (params) =>
+          Object.keys(params).map((key) => {
+            if (Array.isArray(params[key])) {
+              return params[key].map((val) => `${key}=${encodeURIComponent(val)}`).join("&");
+            }
+            return `${key}=${encodeURIComponent(params[key])}`;
+          }).join("&"),
       });
 
       if (response.data) {
@@ -89,9 +77,7 @@ function App() {
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
       nuevosResultados[pregunta.ejercicio] =
-        respuestaUsuario === pregunta.respuesta_correcta
-          ? "✅ Correcta"
-          : `❌ Incorrecta. Respuesta: (${pregunta.respuesta_correcta})`;
+        respuestaUsuario === pregunta.respuesta_correcta ? "correcta" : "incorrecta";
     });
     setResultados(nuevosResultados);
   };
@@ -119,44 +105,43 @@ function App() {
     return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
 
-  // Efecto para procesar las ecuaciones con MathJax después de la carga del contenido
   useEffect(() => {
-    const renderizarMathJax = () => {
-      if (window.MathJax) {
-        window.MathJax.typeset();
-      }
-    };
-
-    renderizarMathJax();
-  }, [preguntas]); // Se ejecuta cuando las preguntas cambian
+    if (window.MathJax) window.MathJax.typeset();
+  }, [preguntas]);
 
   return (
-    <div className="container">
-      <h1>EDBOT: Simulador</h1>
+    <div className="max-w-4xl mx-auto px-4 py-6">
+      <h1 className="text-3xl font-bold text-center mb-4">EDBOT: Simulador</h1>
 
       {!preguntas.length && !mostrarResumen && (
         <>
-          <h2>Selecciona los temas:</h2>
-          {temas.map((tema) => (
-            <label key={tema}>
-              <input
-                type="checkbox"
-                value={tema}
-                checked={temasSeleccionados.includes(tema)}
-                onChange={() => toggleTema(tema)}
-              />
-              {tema}
-            </label>
-          ))}
-          <br />
-          <button onClick={obtenerPreguntas}>Iniciar Simulacro</button>
+          <h2 className="text-xl mb-2">Selecciona los temas:</h2>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {temas.map((tema) => (
+              <label key={tema} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={tema}
+                  checked={temasSeleccionados.includes(tema)}
+                  onChange={() => toggleTema(tema)}
+                />
+                <span>{tema}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            onClick={obtenerPreguntas}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Iniciar Simulacro
+          </button>
         </>
       )}
 
       {preguntas.length > 0 && !mostrarResumen && (
         <div>
-          <div className="barra-superior">
-            <span>Preguntas: {preguntaActualIndex + 1} de {preguntas.length}</span>
+          <div className="flex justify-between items-center mb-4 text-sm text-gray-700">
+            <span>Pregunta {preguntaActualIndex + 1} de {preguntas.length}</span>
             <span>⏱️ {formatTiempo(tiempo)}</span>
           </div>
 
@@ -167,25 +152,31 @@ function App() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5 }}
-              className="pregunta-container"
+              className="bg-white p-4 rounded shadow mb-4"
             >
-              <h2><span dangerouslySetInnerHTML={{ __html: preguntas[preguntaActualIndex].ejercicio }} /></h2>
+              <h2 className="mb-2 text-lg font-medium">
+                <span dangerouslySetInnerHTML={{ __html: preguntas[preguntaActualIndex].ejercicio }} />
+              </h2>
               {preguntas[preguntaActualIndex].imagen && (
-                <img src={preguntas[preguntaActualIndex].imagen} alt="Ejercicio" />
+                <img src={preguntas[preguntaActualIndex].imagen} alt="Ejercicio" className="mb-4 w-full" />
               )}
-              <ul>
+              <ul className="space-y-2">
                 {preguntas[preguntaActualIndex].alternativas.map((alt) => (
                   <li key={alt.letra}>
-                    <label>
+                    <label className="flex items-start space-x-2">
                       <input
                         type="radio"
                         name={`pregunta-${preguntas[preguntaActualIndex].ejercicio}`}
                         value={alt.letra}
                         checked={respuestas[preguntas[preguntaActualIndex].ejercicio] === alt.letra}
-                        onChange={() => seleccionarRespuesta(preguntas[preguntaActualIndex].ejercicio, alt.letra)}
+                        onChange={() =>
+                          seleccionarRespuesta(preguntas[preguntaActualIndex].ejercicio, alt.letra)
+                        }
                       />
-                      <span className="texto-opcion">{alt.letra}: </span>
-                      <span dangerouslySetInnerHTML={{ __html: alt.texto }} />
+                      <span>
+                        <strong>{alt.letra}:</strong>{" "}
+                        <span dangerouslySetInnerHTML={{ __html: alt.texto }} />
+                      </span>
                     </label>
                   </li>
                 ))}
@@ -194,28 +185,60 @@ function App() {
           </AnimatePresence>
 
           {preguntaActualIndex < preguntas.length - 1 ? (
-            <button onClick={siguientePregunta}>Siguiente</button>
+            <button
+              onClick={siguientePregunta}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+            >
+              Siguiente
+            </button>
           ) : (
-            <button onClick={finalizar}>Finalizar y ver resultados</button>
+            <button
+              onClick={finalizar}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Finalizar y ver resultados
+            </button>
           )}
         </div>
       )}
 
       {mostrarResumen && (
-        <div className="resumen-final">
-          <h2>Resumen del Simulacro</h2>
-          <p>Tiempo total: ⏱️ {formatTiempo(tiempo)}</p>
-          {preguntas.map((pregunta, index) => (
-            <div key={index}>
-              <p>
-                <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }} />
-                <br />
-                Tu respuesta: {respuestas[pregunta.ejercicio] || "No respondida"}
-                <br />
-                Resultado: {resultados[pregunta.ejercicio]}
-              </p>
-            </div>
-          ))}
+        <div className="mt-6">
+          <h2 className="text-2xl font-bold mb-4">Resumen del Simulacro</h2>
+          <p className="mb-4">⏱️ Tiempo total: {formatTiempo(tiempo)}</p>
+          <div className="space-y-4">
+            {preguntas.map((pregunta, index) => {
+              const esCorrecta = resultados[pregunta.ejercicio] === "correcta";
+              const respuestaUsuario = respuestas[pregunta.ejercicio] || "No respondida";
+              const respuestaCorrecta = pregunta.respuesta_correcta;
+
+              return (
+                <div
+                  key={index}
+                  className={`p-4 rounded shadow ${
+                    esCorrecta ? "bg-green-100 border-l-4 border-green-600" : "bg-red-100 border-l-4 border-red-600"
+                  }`}
+                >
+                  <p className="mb-2 font-medium">
+                    <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }} />
+                  </p>
+                  <p>
+                    Tu respuesta: <strong>{respuestaUsuario}</strong><br />
+                    {esCorrecta ? (
+                      <span className="text-green-700 font-semibold">✅ Correcta</span>
+                    ) : (
+                      <span className="text-red-700 font-semibold">❌ Incorrecta</span>
+                    )}{" "}
+                    {!esCorrecta && (
+                      <span className="ml-2">
+                        Respuesta correcta: <strong>{respuestaCorrecta}</strong>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
