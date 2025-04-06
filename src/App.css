@@ -1,3 +1,11 @@
+/* Fondo claro para toda la página */
+body {
+  background-color: #f2f2f2;  /* Fondo gris claro */
+  color: #000;                /* Texto negro */
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
 /* Animación de fade */
 .fade-enter {
   opacity: 0;
@@ -19,58 +27,4 @@
   position: fixed;
   top: 10px;
   right: 20px;
-  font-size: 20px;
-  font-weight: bold;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  z-index: 1000;
-}
-
-/* Botones */
-.btn-iniciar,
-.botones button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  margin: 10px;
-  cursor: pointer;
-  font-size: 16px;
-  border-radius: 5px;
-}
-.btn-iniciar:hover,
-.botones button:hover {
-  background-color: #45a049;
-}
-
-/* Contenedor */
-.container {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: white;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  text-align: left;
-}
-
-/* Texto e imagen */
-.ejercicio-texto {
-  margin-bottom: 20px;
-  font-size: 18px;
-}
-
-.imagen-ejercicio {
-  max-width: 100%;
-  height: auto;
-  margin-bottom: 20px;
-}
-
-/* Progreso */
-.barra-progreso {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
+  font-size: 20px
