@@ -143,7 +143,7 @@ useEffect(() => {
         <h1>EDBOT: Simulador de Examen</h1>
         <div className="inicio-content">
           <p>Este simulacro contiene 10 ejercicios seleccionados de Física que te permitirán evaluar tu nivel de preparación.</p>
-          <p>Dispondrás de 40 minutos para resolverlos..</p>
+          <p>Dispondrás de 40 minutos para resolverlos.</p>
           <p>¡Mucho éxito!</p>
           <button className="boton-iniciar" onClick={iniciarSimulacro} disabled={cargando}>
             {cargando ? "Cargando..." : "Iniciar Simulacro"}
