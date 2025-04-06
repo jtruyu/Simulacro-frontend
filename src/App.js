@@ -119,12 +119,16 @@ function App() {
     return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
 
-  // UseEffect para renderizar las ecuaciones con MathJax
+  // Efecto para procesar las ecuaciones con MathJax después de la carga del contenido
   useEffect(() => {
-    if (window.MathJax) {
-      window.MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
-    }
-  }, [preguntas]);
+    const renderizarMathJax = () => {
+      if (window.MathJax) {
+        window.MathJax.typeset();
+      }
+    };
+
+    renderizarMathJax();
+  }, [preguntas]); // Se ejecuta cuando las preguntas cambian
 
   return (
     <div className="container">
