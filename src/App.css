@@ -188,6 +188,11 @@ body {
   color: #2c3e50;
   line-height: 1.5;
 }
+
+.opcion label span:first-child {
+  margin-right: 0.5em;
+}
+
 .controles-navegacion {
   display: flex;
   justify-content: space-between;
