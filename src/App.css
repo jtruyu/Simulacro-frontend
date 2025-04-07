@@ -183,6 +183,11 @@ body {
   flex-grow: 1;
 }
 
+.opcion label span {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  line-height: 1.5;
+}
 .controles-navegacion {
   display: flex;
   justify-content: space-between;
