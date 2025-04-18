@@ -230,14 +230,18 @@ body {
 .opciones-lista {
   list-style-type: none;
   margin-top: 20px;
+  width: 100%;
 }
 
+/* Modificar el ancho de las opciones */
 .opcion {
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
   transition: all 0.3s;
+  min-width: 200px; /* Ancho mínimo para las opciones */
+  width: 100%;
 }
 
 .opcion:hover {
@@ -254,10 +258,29 @@ body {
 .opcion input[type="radio"] {
   margin-right: 12px;
   margin-top: 3px;
+  flex-shrink: 0;
 }
 
+/* Contenedor para alinear mejor el texto de opción */
+.texto-opcion-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.letra-opcion {
+  margin-right: 5px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Mejorar el diseño del texto de la opción */
 .texto-opcion {
   flex: 1;
+  display: inline-block; /* Mejor control sobre el flujo del texto */
+  padding-right: 10px; /* Espacio adicional a la derecha */
+  /* No usamos white-space: nowrap para permitir saltos cuando es necesario */
 }
 
 .controles-navegacion {
