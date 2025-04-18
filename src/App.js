@@ -8,9 +8,19 @@ function App() {
   const [resultados, setResultados] = useState({});
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [cargando, setCargando] = useState(false);
-  const [pantalla, setPantalla] = useState("inicio"); // inicio, simulacro, resultados
-  const [tiempo, setTiempo] = useState(40 * 60); // 60 minutos en segundos
+  const [pantalla, setPantalla] = useState("inicio"); // inicio, registro, simulacro, resultados
+  const [tiempo, setTiempo] = useState(40 * 60); // 40 minutos en segundos
+  const [tiempoInicial] = useState(40 * 60); // Guardar el tiempo inicial para calcular tiempo usado
   const [tiempoActivo, setTiempoActivo] = useState(false);
+  
+  // Estado para los datos del usuario
+  const [datosUsuario, setDatosUsuario] = useState({
+    nombre: "",
+    correo: ""
+  });
+  
+  // Estado para mensaje de comentario según resultado
+  const [comentarioResultado, setComentarioResultado] = useState("");
 
   // Controlar el temporizador
   useEffect(() => {
@@ -36,28 +46,71 @@ function App() {
   }, [preguntaActual, preguntas]);
 
   // Renderizar MathJax en la pantalla de resultados
-useEffect(() => {
-  if (pantalla === "resultados" && window.MathJax) {
-    window.MathJax.typesetPromise()
-      .then(() => console.log("MathJax renderizado en resultados"))
-      .catch((err) => console.error("MathJax error en resultados:", err));
-  }
-}, [pantalla]);
-  
+  useEffect(() => {
+    if (pantalla === "resultados" && window.MathJax) {
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado en resultados"))
+        .catch((err) => console.error("MathJax error en resultados:", err));
+    }
+  }, [pantalla]);
+
+  // Función para manejar cambios en el formulario de registro
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setDatosUsuario({
+      ...datosUsuario,
+      [name]: value
+    });
+  };
+
+  // Función para validar el formulario de registro
+  const validarFormulario = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return datosUsuario.nombre.trim() !== "" && emailRegex.test(datosUsuario.correo);
+  };
+
+  // Función para iniciar el registro
+  const iniciarRegistro = () => {
+    setPantalla("registro");
+  };
+
+  // Función para obtener comentario según porcentaje
+  const obtenerComentario = (porcentaje) => {
+    if (porcentaje < 40) {
+      return "Aún te falta adquirir el nivel necesario para rendir un examen de admisión a la UNI. Continúa practicando y refuerza los conceptos básicos.";
+    } else if (porcentaje < 50) {
+      return "Tienes opciones, pero muy bajas, de ingresar a la UNI. Enfócate en mejorar tus áreas más débiles y practica con más intensidad.";
+    } else if (porcentaje < 60) {
+      return "Tienes opciones de ingreso, pero sin asegurar. Continúa trabajando en las áreas donde tuviste dificultades para aumentar tus probabilidades.";
+    } else if (porcentaje < 70) {
+      return "¡Tienes buenas opciones de ingreso! Estás en el camino correcto, sigue practicando para consolidar tus conocimientos.";
+    } else if (porcentaje < 80) {
+      return "¡Tu ingreso es prácticamente seguro! Mantén el ritmo de estudio y prepárate para destacar en la universidad.";
+    } else if (porcentaje < 90) {
+      return "¡Excelente! Estás luchando para ser de los primeros puestos de tu carrera. Continúa con esta dedicación.";
+    } else {
+      return "¡Impresionante! Con este nivel estás preparado para estar en el cómputo general y entre los mejores ingresantes. ¡Felicitaciones!";
+    }
+  };
+
   const iniciarSimulacro = async () => {
+    if (pantalla === "registro" && !validarFormulario()) {
+      alert("Por favor, completa correctamente todos los campos del formulario");
+      return;
+    }
+    
     setCargando(true);
     setRespuestas({});
     setResultados({});
     setPreguntaActual(0);
-    setTiempo(40 * 60); // Reiniciar el tiempo a 60 minutos
+    setTiempo(40 * 60); // Reiniciar el tiempo a 40 minutos
     setTiempoActivo(true);
     setPantalla("simulacro");
     
     try {
       const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
         params: { 
-          num_preguntas: 10, // Solicitamos 10 preguntas
-          preguntas_vistas: [] // No excluimos ninguna pregunta para el simulacro
+          num_preguntas: 10 // Solicitamos 10 preguntas
         }
       });
 
@@ -65,12 +118,12 @@ useEffect(() => {
         setPreguntas(response.data);
       } else {
         alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("inicio");
+        setPantalla("registro");
       }
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
       alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
-      setPantalla("inicio");
+      setPantalla("registro");
     } finally {
       setCargando(false);
     }
@@ -95,7 +148,7 @@ useEffect(() => {
     }
   };
 
-  const finalizarSimulacro = () => {
+  const finalizarSimulacro = async () => {
     setTiempoActivo(false);
     
     // Calcular resultados
@@ -119,13 +172,36 @@ useEffect(() => {
       }
     });
     
+    const porcentaje = (preguntasCorrectas / preguntas.length) * 100;
+    const tiempoUsado = tiempoInicial - tiempo; // Tiempo usado en segundos
+    
     setResultados({
       detalles: nuevosResultados,
       correctas: preguntasCorrectas,
       incorrectas: preguntasIncorrectas,
       sinResponder: preguntasSinResponder,
-      porcentaje: (preguntasCorrectas / preguntas.length) * 100
+      porcentaje: porcentaje,
+      tiempoUsado: tiempoUsado
     });
+    
+    // Establecer el comentario según el porcentaje
+    setComentarioResultado(obtenerComentario(porcentaje));
+    
+    // Guardar los resultados en la base de datos
+    try {
+      await axios.post("https://mi-proyecto-fastapi.onrender.com/guardar-resultado", {
+        nombre: datosUsuario.nombre,
+        correo: datosUsuario.correo,
+        resultado: porcentaje,
+        preguntas_correctas: preguntasCorrectas,
+        preguntas_incorrectas: preguntasIncorrectas,
+        preguntas_sin_responder: preguntasSinResponder,
+        tiempo_usado: tiempoUsado
+      });
+      console.log("Resultado guardado con éxito");
+    } catch (error) {
+      console.error("Error al guardar el resultado:", error);
+    }
     
     setPantalla("resultados");
   };
@@ -145,9 +221,68 @@ useEffect(() => {
           <p>Este simulacro contiene 10 ejercicios seleccionados de Física que te permitirán evaluar tu nivel de preparación.</p>
           <p>Dispondrás de 40 minutos para resolverlos.</p>
           <p>¡Mucho éxito!</p>
-          <button className="boton-iniciar" onClick={iniciarSimulacro} disabled={cargando}>
-            {cargando ? "Cargando..." : "Iniciar Simulacro"}
+          <button className="boton-iniciar" onClick={iniciarRegistro}>
+            Comenzar
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla de registro
+  if (pantalla === "registro") {
+    return (
+      <div className="container registro-container">
+        <h1>Antes de comenzar</h1>
+        <div className="registro-content">
+          <p>Por favor, completa la siguiente información para iniciar el simulacro:</p>
+          
+          <form className="formulario-registro">
+            <div className="campo-formulario">
+              <label htmlFor="nombre">Nombre completo:</label>
+              <input 
+                type="text" 
+                id="nombre" 
+                name="nombre" 
+                value={datosUsuario.nombre}
+                onChange={handleInputChange}
+                placeholder="Ingresa tu nombre completo"
+                required
+              />
+            </div>
+            
+            <div className="campo-formulario">
+              <label htmlFor="correo">Correo electrónico:</label>
+              <input 
+                type="email" 
+                id="correo" 
+                name="correo" 
+                value={datosUsuario.correo}
+                onChange={handleInputChange}
+                placeholder="Ingresa tu correo electrónico"
+                required
+              />
+            </div>
+            
+            <div className="instrucciones-registro">
+              <h3>Instrucciones:</h3>
+              <ul>
+                <li>Tendrás 40 minutos para resolver 10 ejercicios.</li>
+                <li>Puedes navegar entre las preguntas libremente.</li>
+                <li>El simulacro finalizará cuando completes todas las preguntas o se acabe el tiempo.</li>
+                <li>Recibirás tus resultados inmediatamente al finalizar.</li>
+              </ul>
+            </div>
+            
+            <button 
+              type="button" 
+              className="boton-iniciar" 
+              onClick={iniciarSimulacro} 
+              disabled={cargando || !validarFormulario()}
+            >
+              {cargando ? "Cargando..." : "Iniciar Simulacro"}
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -232,12 +367,18 @@ useEffect(() => {
       <div className="container resultados-container">
         <h1>Resultados del Simulacro</h1>
         
+        <div className="datos-usuario">
+          <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
+          <p><strong>Correo:</strong> {datosUsuario.correo}</p>
+          <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>
+        </div>
+        
         <div className="resumen-resultados">
-          <div className="estadistica">
+          <div className="estadistica correcta">
             <div className="valor">{resultados.correctas}</div>
             <div className="etiqueta">Correctas</div>
           </div>
-          <div className="estadistica">
+          <div className="estadistica incorrecta">
             <div className="valor">{resultados.incorrectas}</div>
             <div className="etiqueta">Incorrectas</div>
           </div>
@@ -249,6 +390,11 @@ useEffect(() => {
             <div className="valor">{resultados.porcentaje.toFixed(1)}%</div>
             <div className="etiqueta">Puntuación</div>
           </div>
+        </div>
+        
+        <div className="comentario-resultado">
+          <h2>Evaluación de tu desempeño</h2>
+          <p>{comentarioResultado}</p>
         </div>
         
         <h2>Detalle de respuestas</h2>
