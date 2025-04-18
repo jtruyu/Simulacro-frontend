@@ -332,14 +332,13 @@ function App() {
                     checked={respuestas[pregunta.ejercicio] === alt.letra}
                     onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
                   />
-                  <div className="texto-opcion-container">
-                    <span className="letra-opcion">{alt.letra}: </span>
-                    <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-                  </div>
+                  <span className="texto-opcion">{alt.letra}: </span>
+                  <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
                 </label>
               </li>
             ))}
           </ul>
+        </div>
         
         <div className="controles-navegacion">
           <button 
