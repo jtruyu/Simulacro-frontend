@@ -233,7 +233,6 @@ body {
   width: 100%;
 }
 
-/* Modificar el ancho de las opciones */
 .opcion {
   padding: 10px;
   margin-bottom: 10px;
@@ -241,9 +240,9 @@ body {
   border-radius: 6px;
   transition: all 0.3s;
   min-width: 200px;
-  /* Ancho mínimo para las opciones */
-  width: auto;
-  display: inline-block; /* Añadido */
+  width: 100%;
+  display: block;
+  position: relative; /* Añadimos para posicionamiento relativo */
 }
 
 .opcion:hover {
@@ -263,13 +262,12 @@ body {
   flex-shrink: 0;
 }
 
-/* Contenedor para alinear mejor el texto de opción */
 .texto-opcion-container {
   display: flex;
   flex-direction: row;
-  width: 100%;
   align-items: flex-start;
-  white-space: nowrap; /* Añadido */
+  white-space: nowrap;
+  margin-left: 20px; /* Añadimos el margen izquierdo */
 }
 
 .letra-opcion {
@@ -278,15 +276,11 @@ body {
   flex-shrink: 0;
 }
 
-/* Mejorar el diseño del texto de la opción */
 .texto-opcion {
   flex: 1;
   display: inline-block;
-  /* Mejor control sobre el flujo del texto */
   padding-right: 10px;
-  /* Espacio adicional a la derecha */
-  /* No usamos white-space: nowrap para permitir saltos cuando es necesario */
-  font-size: 1.3rem; /* Añadido */
+  font-size: 1.3rem;
 }
 
 .controles-navegacion {
