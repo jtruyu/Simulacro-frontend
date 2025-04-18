@@ -322,23 +322,24 @@ function App() {
           )}
 
           <ul className="opciones-lista">
-            {pregunta.alternativas.map((alt) => (
-              <li key={alt.letra} className="opcion">
-                <label>
-                  <input
-                    type="radio"
-                    name={`pregunta-${pregunta.ejercicio}`}
-                    value={alt.letra}
-                    checked={respuestas[pregunta.ejercicio] === alt.letra}
-                    onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
-                  />
-                  <span className="texto-opcion">{alt.letra}: </span>
-                  <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-                </label>
-              </li>
-            ))}
-          </ul>
+  {pregunta.alternativas.map((alt) => (
+    <li key={alt.letra} className="opcion">
+      <label>
+        <input
+          type="radio"
+          name={`pregunta-${pregunta.ejercicio}`}
+          value={alt.letra}
+          checked={respuestas[pregunta.ejercicio] === alt.letra}
+          onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+        />
+        <div className="texto-opcion-container">
+          <span className="letra-opcion">{alt.letra}: </span>
+          <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
         </div>
+      </label>
+    </li>
+  ))}
+</ul>
         
         <div className="controles-navegacion">
           <button 
