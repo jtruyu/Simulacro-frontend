@@ -123,38 +123,19 @@ function App() {
     }
   };
 
-  // Función para calcular puntaje según el curso
-  const calcularPuntajePorCurso = (curso) => {
-    switch (curso) {
-      case "RM":
-        return 1.8;
-      case "Aritmética":
-      case "Álgebra":
-      case "Geometría":
-      case "Trigonometría":
-        return 2.2;
-      case "Física":
-        return 2.4;
-      case "Química":
-        return 1.4;
-      default:
-        return 2.0; // Valor por defecto en caso de curso no especificado
-    }
-  };
-
-  // Función para obtener comentario según nota vigesimal
-  const obtenerComentario = (notaVigesimal) => {
-    if (notaVigesimal < 8) {
+  // Función para obtener comentario según porcentaje
+  const obtenerComentario = (porcentaje) => {
+    if (porcentaje < 40) {
       return "Aún te falta adquirir el nivel necesario para rendir un examen de admisión a la UNI. Continúa practicando y refuerza los conceptos básicos.";
-    } else if (notaVigesimal < 10) {
+    } else if (porcentaje < 50) {
       return "Tienes opciones, pero muy bajas, de ingresar a la UNI. Enfócate en mejorar tus áreas más débiles y practica con más intensidad.";
-    } else if (notaVigesimal < 12) {
+    } else if (porcentaje < 60) {
       return "Tienes opciones de ingreso, pero sin asegurar. Continúa trabajando en las áreas donde tuviste dificultades para aumentar tus probabilidades.";
-    } else if (notaVigesimal < 14) {
+    } else if (porcentaje < 70) {
       return "¡Tienes buenas opciones de ingreso! Estás en el camino correcto, sigue practicando para consolidar tus conocimientos.";
-    } else if (notaVigesimal < 16) {
+    } else if (porcentaje < 80) {
       return "¡Tu ingreso es prácticamente seguro! Mantén el ritmo de estudio y prepárate para destacar en la universidad.";
-    } else if (notaVigesimal < 18) {
+    } else if (porcentaje < 90) {
       return "¡Excelente! Estás luchando para ser de los primeros puestos de tu carrera. Continúa con esta dedicación.";
     } else {
       return "¡Impresionante! Con este nivel estás preparado para estar en el cómputo general y entre los mejores ingresantes. ¡Felicitaciones!";
@@ -169,7 +150,6 @@ function App() {
     let preguntasCorrectas = 0;
     let preguntasIncorrectas = 0;
     let preguntasSinResponder = 0;
-    let notaTotal = 0;
     
     preguntas.forEach((pregunta) => {
       const respuestaUsuario = respuestas[pregunta.ejercicio];
@@ -180,20 +160,13 @@ function App() {
       } else if (respuestaUsuario === pregunta.respuesta_correcta) {
         nuevosResultados[pregunta.ejercicio] = "Correcta";
         preguntasCorrectas++;
-        // Sumar puntaje según el curso
-        notaTotal += calcularPuntajePorCurso(pregunta.curso);
       } else {
         nuevosResultados[pregunta.ejercicio] = `Incorrecta (Respuesta: ${pregunta.respuesta_correcta})`;
         preguntasIncorrectas++;
       }
     });
     
-    // Calcular porcentaje para mantener compatibilidad con código anterior
     const porcentaje = (preguntasCorrectas / preguntas.length) * 100;
-    
-    // Asegurar que la nota no exceda 20 (por si acaso)
-    notaTotal = Math.min(notaTotal, 20);
-    
     const tiempoUsado = tiempoInicial - tiempo; // Tiempo usado en segundos
     
     // Guardar resultados temporalmente
@@ -203,12 +176,11 @@ function App() {
       incorrectas: preguntasIncorrectas,
       sinResponder: preguntasSinResponder,
       porcentaje: porcentaje,
-      notaVigesimal: notaTotal,
       tiempoUsado: tiempoUsado
     });
     
-    // Establecer el comentario según la nota vigesimal
-    setComentarioResultado(obtenerComentario(notaTotal));
+    // Establecer el comentario según el porcentaje
+    setComentarioResultado(obtenerComentario(porcentaje));
     
     // Mostrar pantalla de formulario para recoger datos del usuario
     setPantalla("formulario");
@@ -229,7 +201,7 @@ function App() {
       await axios.post("https://mi-proyecto-fastapi.onrender.com/guardar-resultado", {
         nombre: datosUsuario.nombre,
         correo: datosUsuario.correo,
-        resultado: resultadosTemporales.notaVigesimal, // Ahora guardamos la nota vigesimal
+        resultado: resultadosTemporales.porcentaje,
         preguntas_correctas: resultadosTemporales.correctas,
         preguntas_incorrectas: resultadosTemporales.incorrectas,
         preguntas_sin_responder: resultadosTemporales.sinResponder,
@@ -420,8 +392,8 @@ function App() {
             <div className="etiqueta">Sin responder</div>
           </div>
           <div className="estadistica">
-            <div className="valor">{resultados.notaVigesimal.toFixed(1)}</div>
-            <div className="etiqueta">Nota (0-20)</div>
+            <div className="valor">{resultados.porcentaje.toFixed(1)}%</div>
+            <div className="etiqueta">Puntuación</div>
           </div>
         </div>
         
@@ -452,7 +424,7 @@ function App() {
                     <span className="estado-respuesta sin-responder">Sin responder</span>
                   ) : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta ? (
                     <span className="estado-respuesta correcta">
-                      Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)
+                      Correcta: {pregunta.respuesta_correcta}
                     </span>
                   ) : (
                     <span className="estado-respuesta incorrecta">
