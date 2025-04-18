@@ -8,12 +8,13 @@ function App() {
   const [resultados, setResultados] = useState({});
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [cargando, setCargando] = useState(false);
-  const [pantalla, setPantalla] = useState("inicio"); // inicio, registro, simulacro, resultados
+  // Cambiamos el flujo de pantallas: inicio -> simulacro -> formulario -> resultados
+  const [pantalla, setPantalla] = useState("inicio");
   const [tiempo, setTiempo] = useState(40 * 60); // 40 minutos en segundos
   const [tiempoInicial] = useState(40 * 60); // Guardar el tiempo inicial para calcular tiempo usado
   const [tiempoActivo, setTiempoActivo] = useState(false);
   
-  // Estado para los datos del usuario
+  // Estado para los datos del usuario (ahora se llenarán al final)
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: "",
     correo: ""
@@ -21,6 +22,8 @@ function App() {
   
   // Estado para mensaje de comentario según resultado
   const [comentarioResultado, setComentarioResultado] = useState("");
+  // Estado para almacenar resultados temporales antes de pedir datos del usuario
+  const [resultadosTemporales, setResultadosTemporales] = useState(null);
 
   // Controlar el temporizador
   useEffect(() => {
@@ -54,7 +57,7 @@ function App() {
     }
   }, [pantalla]);
 
-  // Función para manejar cambios en el formulario de registro
+  // Función para manejar cambios en el formulario de datos
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setDatosUsuario({
@@ -63,42 +66,14 @@ function App() {
     });
   };
 
-  // Función para validar el formulario de registro
+  // Función para validar el formulario
   const validarFormulario = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return datosUsuario.nombre.trim() !== "" && emailRegex.test(datosUsuario.correo);
   };
 
-  // Función para iniciar el registro
-  const iniciarRegistro = () => {
-    setPantalla("registro");
-  };
-
-  // Función para obtener comentario según porcentaje
-  const obtenerComentario = (porcentaje) => {
-    if (porcentaje < 40) {
-      return "Aún te falta adquirir el nivel necesario para rendir un examen de admisión a la UNI. Continúa practicando y refuerza los conceptos básicos.";
-    } else if (porcentaje < 50) {
-      return "Tienes opciones, pero muy bajas, de ingresar a la UNI. Enfócate en mejorar tus áreas más débiles y practica con más intensidad.";
-    } else if (porcentaje < 60) {
-      return "Tienes opciones de ingreso, pero sin asegurar. Continúa trabajando en las áreas donde tuviste dificultades para aumentar tus probabilidades.";
-    } else if (porcentaje < 70) {
-      return "¡Tienes buenas opciones de ingreso! Estás en el camino correcto, sigue practicando para consolidar tus conocimientos.";
-    } else if (porcentaje < 80) {
-      return "¡Tu ingreso es prácticamente seguro! Mantén el ritmo de estudio y prepárate para destacar en la universidad.";
-    } else if (porcentaje < 90) {
-      return "¡Excelente! Estás luchando para ser de los primeros puestos de tu carrera. Continúa con esta dedicación.";
-    } else {
-      return "¡Impresionante! Con este nivel estás preparado para estar en el cómputo general y entre los mejores ingresantes. ¡Felicitaciones!";
-    }
-  };
-
+  // Función para iniciar el simulacro directamente desde la pantalla de inicio
   const iniciarSimulacro = async () => {
-    if (pantalla === "registro" && !validarFormulario()) {
-      alert("Por favor, completa correctamente todos los campos del formulario");
-      return;
-    }
-    
     setCargando(true);
     setRespuestas({});
     setResultados({});
@@ -118,12 +93,12 @@ function App() {
         setPreguntas(response.data);
       } else {
         alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("registro");
+        setPantalla("inicio");
       }
     } catch (error) {
       console.error("Error al obtener preguntas:", error);
       alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
-      setPantalla("registro");
+      setPantalla("inicio");
     } finally {
       setCargando(false);
     }
@@ -148,7 +123,26 @@ function App() {
     }
   };
 
-  const finalizarSimulacro = async () => {
+  // Función para obtener comentario según porcentaje
+  const obtenerComentario = (porcentaje) => {
+    if (porcentaje < 40) {
+      return "Aún te falta adquirir el nivel necesario para rendir un examen de admisión a la UNI. Continúa practicando y refuerza los conceptos básicos.";
+    } else if (porcentaje < 50) {
+      return "Tienes opciones, pero muy bajas, de ingresar a la UNI. Enfócate en mejorar tus áreas más débiles y practica con más intensidad.";
+    } else if (porcentaje < 60) {
+      return "Tienes opciones de ingreso, pero sin asegurar. Continúa trabajando en las áreas donde tuviste dificultades para aumentar tus probabilidades.";
+    } else if (porcentaje < 70) {
+      return "¡Tienes buenas opciones de ingreso! Estás en el camino correcto, sigue practicando para consolidar tus conocimientos.";
+    } else if (porcentaje < 80) {
+      return "¡Tu ingreso es prácticamente seguro! Mantén el ritmo de estudio y prepárate para destacar en la universidad.";
+    } else if (porcentaje < 90) {
+      return "¡Excelente! Estás luchando para ser de los primeros puestos de tu carrera. Continúa con esta dedicación.";
+    } else {
+      return "¡Impresionante! Con este nivel estás preparado para estar en el cómputo general y entre los mejores ingresantes. ¡Felicitaciones!";
+    }
+  };
+
+  const finalizarSimulacro = () => {
     setTiempoActivo(false);
     
     // Calcular resultados
@@ -175,7 +169,8 @@ function App() {
     const porcentaje = (preguntasCorrectas / preguntas.length) * 100;
     const tiempoUsado = tiempoInicial - tiempo; // Tiempo usado en segundos
     
-    setResultados({
+    // Guardar resultados temporalmente
+    setResultadosTemporales({
       detalles: nuevosResultados,
       correctas: preguntasCorrectas,
       incorrectas: preguntasIncorrectas,
@@ -187,22 +182,37 @@ function App() {
     // Establecer el comentario según el porcentaje
     setComentarioResultado(obtenerComentario(porcentaje));
     
+    // Mostrar pantalla de formulario para recoger datos del usuario
+    setPantalla("formulario");
+  };
+
+  // Nueva función para procesar el formulario y mostrar resultados
+  const procesarFormulario = async () => {
+    if (!validarFormulario()) {
+      alert("Por favor, completa correctamente todos los campos del formulario");
+      return;
+    }
+
+    // Establecer los resultados finales
+    setResultados(resultadosTemporales);
+    
     // Guardar los resultados en la base de datos
     try {
       await axios.post("https://mi-proyecto-fastapi.onrender.com/guardar-resultado", {
         nombre: datosUsuario.nombre,
         correo: datosUsuario.correo,
-        resultado: porcentaje,
-        preguntas_correctas: preguntasCorrectas,
-        preguntas_incorrectas: preguntasIncorrectas,
-        preguntas_sin_responder: preguntasSinResponder,
-        tiempo_usado: tiempoUsado
+        resultado: resultadosTemporales.porcentaje,
+        preguntas_correctas: resultadosTemporales.correctas,
+        preguntas_incorrectas: resultadosTemporales.incorrectas,
+        preguntas_sin_responder: resultadosTemporales.sinResponder,
+        tiempo_usado: resultadosTemporales.tiempoUsado
       });
       console.log("Resultado guardado con éxito");
     } catch (error) {
       console.error("Error al guardar el resultado:", error);
     }
     
+    // Mostrar pantalla de resultados
     setPantalla("resultados");
   };
 
@@ -221,21 +231,21 @@ function App() {
           <p>Este simulacro contiene 10 ejercicios seleccionados de Física que te permitirán evaluar tu nivel de preparación.</p>
           <p>Dispondrás de 40 minutos para resolverlos.</p>
           <p>¡Mucho éxito!</p>
-          <button className="boton-iniciar" onClick={iniciarRegistro}>
+          <button className="boton-iniciar" onClick={iniciarSimulacro}>
             Comenzar
           </button>
         </div>
       </div>
     );
   }
-
-  // Pantalla de registro
-  if (pantalla === "registro") {
+  
+  // Nueva pantalla de formulario (después del simulacro)
+  if (pantalla === "formulario") {
     return (
-      <div className="container registro-container">
-        <h1>Antes de comenzar</h1>
-        <div className="registro-content">
-          <p>Por favor, completa la siguiente información para iniciar el simulacro:</p>
+      <div className="container formulario-container">
+        <h1>¡Simulacro completado!</h1>
+        <div className="formulario-content">
+          <p>Por favor, completa tus datos para ver tus resultados:</p>
           
           <form className="formulario-registro">
             <div className="campo-formulario">
@@ -264,23 +274,18 @@ function App() {
               />
             </div>
             
-            <div className="instrucciones-registro">
-              <h3>Instrucciones:</h3>
-              <ul>
-                <li>Tendrás 40 minutos para resolver 10 ejercicios.</li>
-                <li>Puedes navegar entre las preguntas libremente.</li>
-                <li>El simulacro finalizará cuando completes todas las preguntas o se acabe el tiempo.</li>
-                <li>Recibirás tus resultados inmediatamente al finalizar.</li>
-              </ul>
+            <div className="formulario-info">
+              <p>Estos datos nos permitirán enviarte información sobre tus resultados y
+                recomendaciones personalizadas para mejorar tu desempeño.</p>
             </div>
             
             <button 
               type="button" 
-              className="boton-iniciar" 
-              onClick={iniciarSimulacro} 
-              disabled={cargando || !validarFormulario()}
+              className="boton-ver-resultados" 
+              onClick={procesarFormulario} 
+              disabled={!validarFormulario()}
             >
-              {cargando ? "Cargando..." : "Iniciar Simulacro"}
+              Ver mis resultados
             </button>
           </form>
         </div>
@@ -346,7 +351,7 @@ function App() {
           
           {preguntaActual === preguntas.length - 1 ? (
             <button className="boton-finalizar" onClick={finalizarSimulacro}>
-              Finalizar y ver resultados
+              Finalizar simulacro
             </button>
           ) : (
             <button 
