@@ -242,7 +242,6 @@ body {
   min-width: 200px;
   width: 100%;
   display: block;
-  position: relative; /* Añadimos para posicionamiento relativo */
 }
 
 .opcion:hover {
@@ -266,8 +265,9 @@ body {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  white-space: nowrap;
-  margin-left: 20px; /* Añadimos el margen izquierdo */
+  text-align: left; /* Alineamos el texto a la izquierda */
+  margin-left: 20px; /* Mantenemos el margen para el "espacio" */
+  width: 100%; /* Aseguramos que el contenedor ocupe el ancho */
 }
 
 .letra-opcion {
@@ -491,33 +491,4 @@ body {
 }
 
 .boton-reiniciar:hover {
-  background-color: #2980b9;
-}
-
-/* Pantalla de carga */
-.cargando-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+  background-color
