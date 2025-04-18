@@ -240,8 +240,10 @@ body {
   border: 1px solid #ddd;
   border-radius: 6px;
   transition: all 0.3s;
-  min-width: 200px; /* Ancho mínimo para las opciones */
-  width: 100%;
+  min-width: 200px;
+  /* Ancho mínimo para las opciones */
+  width: auto;
+  display: inline-block; /* Añadido */
 }
 
 .opcion:hover {
@@ -267,6 +269,7 @@ body {
   flex-direction: row;
   width: 100%;
   align-items: flex-start;
+  white-space: nowrap; /* Añadido */
 }
 
 .letra-opcion {
@@ -278,9 +281,12 @@ body {
 /* Mejorar el diseño del texto de la opción */
 .texto-opcion {
   flex: 1;
-  display: inline-block; /* Mejor control sobre el flujo del texto */
-  padding-right: 10px; /* Espacio adicional a la derecha */
+  display: inline-block;
+  /* Mejor control sobre el flujo del texto */
+  padding-right: 10px;
+  /* Espacio adicional a la derecha */
   /* No usamos white-space: nowrap para permitir saltos cuando es necesario */
+  font-size: 1.3rem; /* Añadido */
 }
 
 .controles-navegacion {
@@ -289,7 +295,8 @@ body {
   margin-top: 20px;
 }
 
-.boton-nav, .boton-finalizar {
+.boton-nav,
+.boton-finalizar {
   padding: 10px 20px;
   border-radius: 6px;
   font-size: 1rem;
@@ -513,6 +520,10 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
