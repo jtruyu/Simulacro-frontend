@@ -90,7 +90,7 @@ function App() {
     setPantalla("simulacro");
     
     try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/diagnostico", {
         params: { 
           num_preguntas: 10
         }
@@ -115,7 +115,7 @@ function App() {
     }
   };
 
-  const iniciarSimulacro = async () => {
+  const iniciarDiagnostico = async () => {
     setTipoPrueba("simulacro");
     setCargando(true);
     setRespuestas({});
@@ -127,7 +127,7 @@ function App() {
     setPantalla("simulacro");
     
     try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/primer-simulacro");
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro");
   
       if (response.data && response.data.length > 0) {
         const preguntasOrdenadas = [...response.data].sort((a, b) => {
@@ -300,7 +300,7 @@ function App() {
             Comenzar diagnóstico
           </button>
           
-          <h2 style={{marginTop: '40px'}}>Simulacro completo</h2>
+          <h2 style={{marginTop: '40px'}}>Simulacro</h2>
           <p>Este simulacro completo contiene 30 ejercicios similares a los del examen de admisión de la UNI, que te permitirán evaluar tu nivel de preparación en condiciones reales.</p>
           <p>Dispondrás de 2 horas para resolverlos (tiempo real del examen).</p>
           <button className="boton-iniciar" onClick={iniciarSimulacro}>
