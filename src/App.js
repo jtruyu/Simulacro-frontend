@@ -256,7 +256,7 @@ function App() {
     
     try {
       const endpoint = tipoPrueba === "diagnostico" 
-        ? "https://mi-proyecto-fastapi.onrender.com/guardar-resultado" 
+        ? "https://mi-proyecto-fastapi.onrender.com/guardar-diagnostico" 
         : "https://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
       
       const dataToSend = {
