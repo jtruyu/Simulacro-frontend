@@ -90,7 +90,7 @@ function App() {
     setPantalla("simulacro");
     
     try {
-      const response = await axios.get("https://backend-mvp-a6w0.onrender.com/simulacro", {
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro", {
         params: { 
           num_preguntas: 10
         }
@@ -127,7 +127,7 @@ function App() {
     setPantalla("simulacro");
     
     try {
-      const response = await axios.get("https://backend-mvp-a6w0.onrender.com/primer-simulacro");
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/primer-simulacro");
   
       if (response.data && response.data.length > 0) {
         const preguntasOrdenadas = [...response.data].sort((a, b) => {
