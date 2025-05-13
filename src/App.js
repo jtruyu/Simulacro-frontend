@@ -115,7 +115,7 @@ function App() {
     }
   };
 
-  const iniciarDiagnostico = async () => {
+  const iniciarSimulacro = async () => {
     setTipoPrueba("simulacro");
     setCargando(true);
     setRespuestas({});
