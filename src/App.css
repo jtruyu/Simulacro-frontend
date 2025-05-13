@@ -1,566 +1,572 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./App.css";
-
-function App() {
-  const [preguntas, setPreguntas] = useState([]);
-  const [respuestas, setRespuestas] = useState({});
-  const [resultados, setResultados] = useState({});
-  const [preguntaActual, setPreguntaActual] = useState(0);
-  const [cargando, setCargando] = useState(false);
-  const [pantalla, setPantalla] = useState("inicio");
-  const [tiempo, setTiempo] = useState(0);
-  const [tiempoInicial, setTiempoInicial] = useState(0);
-  const [tiempoActivo, setTiempoActivo] = useState(false);
-  const [tipoPrueba, setTipoPrueba] = useState("");
-  
-  const [datosUsuario, setDatosUsuario] = useState({
-    nombre: "",
-    correo: ""
-  });
-  
-  const [comentarioResultado, setComentarioResultado] = useState("");
-  const [resultadosTemporales, setResultadosTemporales] = useState(null);
-
-  useEffect(() => {
-    let intervalo;
-    if (tiempoActivo && tiempo > 0) {
-      intervalo = setInterval(() => {
-        setTiempo((tiempoAnterior) => tiempoAnterior - 1);
-      }, 1000);
-    } else if (tiempo === 0 && tiempoInicial > 0) {
-      finalizarPrueba();
-    }
-
-    return () => clearInterval(intervalo);
-  }, [tiempoActivo, tiempo]);
-
-  useEffect(() => {
-    if (window.MathJax && preguntas.length > 0) {
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado"))
-        .catch((err) => console.error("MathJax error:", err));
-    }
-  }, [preguntaActual, preguntas]);
-
-  useEffect(() => {
-    if (pantalla === "resultados" && window.MathJax) {
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado en resultados"))
-        .catch((err) => console.error("MathJax error en resultados:", err));
-    }
-  }, [pantalla]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setDatosUsuario({
-      ...datosUsuario,
-      [name]: value
-    });
-  };
-
-  const validarFormulario = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return datosUsuario.nombre.trim() !== "" && emailRegex.test(datosUsuario.correo);
-  };
-
-  const obtenerOrdenCurso = (curso) => {
-    const ordenCursos = {
-      "RM": 1,
-      "Aritmética": 2,
-      "Álgebra": 3,
-      "Geometría": 4,
-      "Trigonometría": 5,
-      "Física": 6,
-      "Química": 7
-    };
-    
-    return ordenCursos[curso] || 999;
-  };
-    
-  const iniciarDiagnostico = async () => {
-    setTipoPrueba("diagnostico");
-    setCargando(true);
-    setRespuestas({});
-    setResultados({});
-    setPreguntaActual(0);
-    setTiempo(40 * 60);
-    setTiempoInicial(40 * 60);
-    setTiempoActivo(true);
-    setPantalla("simulacro");
-    
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/diagnostico", {
-        params: { 
-          num_preguntas: 10
-        }
-      });
-  
-      if (response.data && response.data.length > 0) {
-        const preguntasOrdenadas = [...response.data].sort((a, b) => {
-          return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
-        });
-        
-        setPreguntas(preguntasOrdenadas);
-      } else {
-        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("inicio");
-      }
-    } catch (error) {
-      console.error("Error al obtener preguntas:", error);
-      alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
-      setPantalla("inicio");
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const iniciarSimulacro = async () => {
-    setTipoPrueba("simulacro");
-    setCargando(true);
-    setRespuestas({});
-    setResultados({});
-    setPreguntaActual(0);
-    setTiempo(120 * 60);
-    setTiempoInicial(120 * 60);
-    setTiempoActivo(true);
-    setPantalla("simulacro");
-    
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro");
-  
-      if (response.data && response.data.length > 0) {
-        const preguntasOrdenadas = [...response.data].sort((a, b) => {
-          return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
-        });
-        
-        setPreguntas(preguntasOrdenadas);
-      } else {
-        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("inicio");
-      }
-    } catch (error) {
-      console.error("Error al obtener preguntas:", error);
-      alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
-      setPantalla("inicio");
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const seleccionarRespuesta = (ejercicio, letra) => {
-    setRespuestas((prevRespuestas) => ({
-      ...prevRespuestas,
-      [ejercicio]: letra,
-    }));
-  };
-
-  const siguientePregunta = () => {
-    if (preguntaActual < preguntas.length - 1) {
-      setPreguntaActual(preguntaActual + 1);
-    }
-  };
-
-  const preguntaAnterior = () => {
-    if (preguntaActual > 0) {
-      setPreguntaActual(preguntaActual - 1);
-    }
-  };
-
-  const calcularPuntajePorCurso = (curso) => {
-    switch (curso) {
-      case "RM":
-      case "RV":
-        return 0.63;
-      case "Aritmética":
-      case "Álgebra":
-      case "Geometría":
-      case "Trigonometría":
-        return 0.76;
-      case "Física":
-        return 0.81;
-      case "Química":
-        return 0.46;
-      default:
-        return 0.7;
-    }
-  };
-
-  const obtenerComentario = (notaVigesimal) => {
-    if (tipoPrueba === "diagnostico") {
-      if (notaVigesimal < 10) {
-        return "Es necesario fortalecer tu base para el examen de admisión a la UNI. Te animamos a practicar con dedicación y a revisar los conceptos fundamentales.";
-      } else if (notaVigesimal < 14) {
-        return "Tienes potencial para lograr el ingreso a la UNI, pero se requiere mayor consistencia. Identifica tus áreas de oportunidad y trabaja intensamente en ellas.";
-      } else if (notaVigesimal < 18) {
-        return "¡Vas por buen camino! Estás demostrando un buen nivel de preparación. Continúa practicando para afianzar tus conocimientos y aumentar tus posibilidades de éxito.";
-      } else {
-        return "¡Excelente desempeño! Tu preparación te posiciona para competir por los primeros puestos. ¡Sigue así y alcanzarás tus metas!";
-      }
-    } else {
-      return "Los resultados detallados de tu simulacro serán enviados a tu correo electrónico. Revisa tu bandeja de entrada en las próximas horas.";
-    }
-  };
-
-  const finalizarPrueba = () => {
-    setTiempoActivo(false);
-    
-    let nuevosResultados = {};
-    let preguntasCorrectas = 0;
-    let preguntasIncorrectas = 0;
-    let preguntasSinResponder = 0;
-    let notaTotal = 0;
-    
-    preguntas.forEach((pregunta) => {
-      const respuestaUsuario = respuestas[pregunta.ejercicio];
-      
-      if (!respuestaUsuario) {
-        nuevosResultados[pregunta.ejercicio] = "Sin responder";
-        preguntasSinResponder++;
-      } else if (respuestaUsuario === pregunta.respuesta_correcta) {
-        nuevosResultados[pregunta.ejercicio] = "Correcta";
-        preguntasCorrectas++;
-        notaTotal += calcularPuntajePorCurso(pregunta.curso);
-      } else {
-        nuevosResultados[pregunta.ejercicio] = `Incorrecta (Respuesta: ${pregunta.respuesta_correcta})`;
-        preguntasIncorrectas++;
-      }
-    });
-    
-    const porcentaje = (preguntasCorrectas / preguntas.length) * 100;
-    notaTotal = Math.min(notaTotal, 20);
-    const tiempoUsado = tiempoInicial - tiempo;
-    
-    setResultadosTemporales({
-      detalles: nuevosResultados,
-      correctas: preguntasCorrectas,
-      incorrectas: preguntasIncorrectas,
-      sinResponder: preguntasSinResponder,
-      porcentaje: porcentaje,
-      notaVigesimal: notaTotal,
-      tiempoUsado: tiempoUsado,
-      respuestas: respuestas
-    });
-    
-    setComentarioResultado(obtenerComentario(notaTotal));
-    setPantalla("formulario");
-  };
-
-  const procesarFormulario = async () => {
-    if (!validarFormulario()) {
-      alert("Por favor, completa correctamente todos los campos del formulario");
-      return;
-    }
-
-    setResultados(resultadosTemporales);
-    
-    try {
-      const endpoint = tipoPrueba === "diagnostico" 
-        ? "https://mi-proyecto-fastapi.onrender.com/guardar-diagnostico" 
-        : "https://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
-      
-      const dataToSend = {
-        nombre: datosUsuario.nombre,
-        correo: datosUsuario.correo,
-        resultado: resultadosTemporales.notaVigesimal,
-        preguntas_correctas: resultadosTemporales.correctas,
-        preguntas_incorrectas: resultadosTemporales.incorrectas,
-        preguntas_sin_responder: resultadosTemporales.sinResponder,
-        tiempo_usado: resultadosTemporales.tiempoUsado,
-        respuestas: JSON.stringify(resultadosTemporales.respuestas)
-      };
-
-      console.log("Datos a enviar:", dataToSend);
-      
-      const response = await axios.post(endpoint, dataToSend);
-      console.log("Respuesta del servidor:", response.data);
-    } catch (error) {
-      console.error("Error al guardar el resultado:", error.response ? error.response.data : error.message);
-      alert("Hubo un error al guardar tus resultados. Por favor intenta nuevamente.");
-    }
-    
-    setPantalla("resultados");
-  };
-
-  const formatoTiempo = (segundos) => {
-    const minutos = Math.floor(segundos / 60);
-    const segundosRestantes = segundos % 60;
-    return `${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
-  };
-  
-  if (pantalla === "inicio") {
-    return (
-      <div className="container inicio-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
-        
-        <div className="card inicio-card">
-          <div className="card-header">
-            <h2>Evalúa tu preparación</h2>
-          </div>
-          
-          <div className="card-body">
-            <div className="test-option">
-              <h3>Prueba de diagnóstico</h3>
-              <p>10 ejercicios • 40 minutos</p>
-              <p>Evalúa tu nivel actual con preguntas clave</p>
-              <button className="btn-primary" onClick={iniciarDiagnostico}>
-                Comenzar
-              </button>
-            </div>
-            
-            <div className="divider">o</div>
-            
-            <div className="test-option">
-              <h3>Simulacro completo</h3>
-              <p>30 ejercicios • 120 minutos</p>
-              <p>Simulación real del examen de admisión</p>
-              <button className="btn-primary" onClick={iniciarSimulacro}>
-                Comenzar
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <footer className="footer">
-          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
-        </footer>
-      </div>
-    );
-  }
-  
-  if (pantalla === "formulario") {
-    return (
-      <div className="container formulario-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
-        
-        <div className="card">
-          <div className="card-header">
-            <h2>{tipoPrueba === "diagnostico" ? "¡Prueba completada!" : "¡Simulacro completado!"}</h2>
-          </div>
-          
-          <div className="card-body">
-            <p className="form-description">Por favor, completa tus datos para {tipoPrueba === "diagnostico" ? "ver tus resultados" : "recibir tus resultados por correo"}:</p>
-            
-            <form className="formulario-registro">
-              <div className="campo-formulario">
-                <label htmlFor="nombre">Nombre completo:</label>
-                <input 
-                  type="text" 
-                  id="nombre" 
-                  name="nombre" 
-                  value={datosUsuario.nombre}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa tu nombre completo"
-                  required
-                />
-              </div>
-              
-              <div className="campo-formulario">
-                <label htmlFor="correo">Correo electrónico:</label>
-                <input 
-                  type="email" 
-                  id="correo" 
-                  name="correo" 
-                  value={datosUsuario.correo}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa tu correo electrónico"
-                  required
-                />
-              </div>
-              
-              <div className="form-info">
-                <p>Estos datos nos permitirán {tipoPrueba === "diagnostico" ? "mostrarte tus resultados y recomendaciones" : "enviarte los resultados detallados de tu simulacro"}.</p>
-              </div>
-              
-              <button 
-                type="button" 
-                className="btn-primary" 
-                onClick={procesarFormulario} 
-                disabled={!validarFormulario()}
-              >
-                {tipoPrueba === "diagnostico" ? "Ver mis resultados" : "Enviar mis resultados"}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (pantalla === "simulacro" && preguntas.length > 0) {
-    const pregunta = preguntas[preguntaActual];
-    const progreso = ((preguntaActual + 1) / preguntas.length) * 100;
-    
-    return (
-      <div className="container test-container">
-        <div className="test-header">
-          <div className="progress-container">
-            <div className="progress-bar" style={{ width: `${progreso}%` }}></div>
-            <span className="progress-text">
-              Pregunta {preguntaActual + 1} de {preguntas.length}
-            </span>
-          </div>
-          <div className="timer">
-            <span className="timer-icon">⏱️</span>
-            {formatoTiempo(tiempo)}
-          </div>
-        </div>
-        
-        <div className="question-card">
-          <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
-          
-          {pregunta.imagen && (
-            <div className="question-image">
-              <img src={pregunta.imagen} alt="Ejercicio" />
-            </div>
-          )}
-          
-          <div className="options-container">
-            {pregunta.alternativas.map((alt) => (
-              <div 
-                key={alt.letra} 
-                className={`option ${respuestas[pregunta.ejercicio] === alt.letra ? 'selected' : ''}`}
-                onClick={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
-              >
-                <span className="option-letter">{alt.letra}</span>
-                <span className="option-text" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="navigation-buttons">
-          <button 
-            className="btn-secondary" 
-            onClick={preguntaAnterior} 
-            disabled={preguntaActual === 0}
-          >
-            Anterior
-          </button>
-          
-          {preguntaActual === preguntas.length - 1 ? (
-            <button className="btn-primary" onClick={finalizarPrueba}>
-              Finalizar prueba
-            </button>
-          ) : (
-            <button className="btn-primary" onClick={siguientePregunta}>
-              Siguiente
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
-  if (pantalla === "resultados") {
-    return (
-      <div className="container results-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
-        
-        <div className="card results-card">
-          <div className="card-header">
-            <h2>Resultados {tipoPrueba === "diagnostico" ? "del diagnóstico" : "del simulacro"}</h2>
-          </div>
-          
-          <div className="card-body">
-            <div className="user-data">
-              <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
-              <p><strong>Correo:</strong> {datosUsuario.correo}</p>
-              <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>
-            </div>
-            
-            <div className="results-summary">
-              <div className="score-display">
-                <div className="score-value">{resultados.notaVigesimal.toFixed(1)}</div>
-                <div className="score-label">Puntuación (0-20)</div>
-              </div>
-              
-              <div className="results-details">
-                <div className="detail-item correct">
-                  <span className="detail-value">{resultados.correctas}</span>
-                  <span className="detail-label">Correctas</span>
-                </div>
-                <div className="detail-item incorrect">
-                  <span className="detail-value">{resultados.incorrectas}</span>
-                  <span className="detail-label">Incorrectas</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-value">{resultados.sinResponder}</span>
-                  <span className="detail-label">Sin responder</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="feedback-section">
-              <h3>Evaluación de tu desempeño</h3>
-              <p>{comentarioResultado}</p>
-            </div>
-            
-            {tipoPrueba === "diagnostico" && (
-              <div className="answers-review">
-                <h3>Detalle de respuestas</h3>
-                {preguntas.map((pregunta, index) => (
-                  <div key={index} className={`answer-item ${
-                    !respuestas[pregunta.ejercicio] 
-                      ? 'unanswered' 
-                      : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta 
-                        ? 'correct' 
-                        : 'incorrect'
-                  }`}>
-                    <div className="question-number">{index + 1}</div>
-                    <div className="question-content">
-                      <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
-                      <div className="answer-status">
-                        {!respuestas[pregunta.ejercicio] ? (
-                          <span>Sin responder</span>
-                        ) : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta ? (
-                          <span>Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)</span>
-                        ) : (
-                          <span>Tu respuesta: {respuestas[pregunta.ejercicio]} • Correcta: {pregunta.respuesta_correcta}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {tipoPrueba === "simulacro" && (
-              <div className="simulacro-message">
-                <p>Los resultados detallados de tu simulacro serán enviados a tu correo electrónico.</p>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="actions-container">
-          <button className="btn-primary" onClick={() => setPantalla("inicio")}>
-            Volver al inicio
-          </button>
-        </div>
-        
-        <footer className="footer">
-          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
-        </footer>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="container loading-container">
-      <div className="spinner"></div>
-      <p>Cargando {tipoPrueba === "diagnostico" ? "prueba de diagnóstico" : "simulacro"}...</p>
-    </div>
-  );
+/* Estilos generales */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-export default App;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f7fa;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.header h1 {
+  color: #2c3e50;
+  font-size: 2.2rem;
+  margin-bottom: 5px;
+}
+
+.header p {
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+/* Tarjetas */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px;
+  background-color: #3498db;
+  color: white;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.card-body {
+  padding: 25px;
+}
+
+/* Opciones de prueba */
+.test-option {
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.test-option h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+
+.test-option p {
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.divider {
+  margin: 20px 0;
+  position: relative;
+  text-align: center;
+  color: #95a5a6;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e0e0e0;
+  z-index: -1;
+}
+
+.divider span {
+  background-color: white;
+  padding: 0 15px;
+}
+
+/* Botones */
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: #d5dbdb;
+}
+
+/* Pantalla de test */
+.test-container {
+  gap: 20px;
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.progress-container {
+  flex-grow: 1;
+  margin-right: 20px;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress-bar div {
+  height: 100%;
+  background-color: #3498db;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.timer {
+  background-color: #f8f9fa;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #e74c3c;
+  display: flex;
+  align-items: center;
+}
+
+.timer-icon {
+  margin-right: 5px;
+}
+
+.question-card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.question-text {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.question-image {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.question-image img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.options-container {
+  margin-top: 25px;
+}
+
+.option {
+  padding: 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.option:hover {
+  background-color: #f8f9fa;
+}
+
+.option.selected {
+  border-color: #3498db;
+  background-color: #e8f4fc;
+}
+
+.option-letter {
+  font-weight: bold;
+  margin-right: 12px;
+  color: #3498db;
+  min-width: 20px;
+}
+
+.option-text {
+  flex: 1;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25px;
+}
+
+/* Formulario */
+.form-description {
+  margin-bottom: 20px;
+  color: #34495e;
+  text-align: center;
+}
+
+.campo-formulario {
+  margin-bottom: 20px;
+}
+
+.campo-formulario label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.campo-formulario input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+.campo-formulario input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-size: 0.95rem;
+  color: #7f8c8d;
+}
+
+/* Resultados */
+.results-container {
+  padding-bottom: 40px;
+}
+
+.user-data {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.user-data p {
+  margin-bottom: 8px;
+  color: #34495e;
+}
+
+.results-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 30px 0;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.score-display {
+  text-align: center;
+  min-width: 150px;
+}
+
+.score-value {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 1rem;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.results-details {
+  display: flex;
+  gap: 15px;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+.detail-item {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  min-width: 100px;
+  background-color: #f8f9fa;
+}
+
+.detail-item.correct {
+  background-color: #e8f8f0;
+}
+
+.detail-item.incorrect {
+  background-color: #fae8e6;
+}
+
+.detail-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.detail-item.correct .detail-value {
+  color: #27ae60;
+}
+
+.detail-item.incorrect .detail-value {
+  color: #e74c3c;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.feedback-section {
+  background-color: #eaf2f8;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 30px 0;
+}
+
+.feedback-section h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.feedback-section p {
+  color: #34495e;
+  line-height: 1.6;
+}
+
+.answers-review {
+  margin-top: 30px;
+}
+
+.answers-review h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.answer-item {
+  display: flex;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.answer-item.correct {
+  border-left: 4px solid #27ae60;
+  background-color: #e8f8f0;
+}
+
+.answer-item.incorrect {
+  border-left: 4px solid #e74c3c;
+  background-color: #fae8e6;
+}
+
+.answer-item.unanswered {
+  border-left: 4px solid #f39c12;
+  background-color: #fef9e7;
+}
+
+.question-number {
+  background-color: #3498db;
+  color: white;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 15px;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.question-content {
+  flex: 1;
+}
+
+.question-text {
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.answer-status {
+  font-size: 0.95rem;
+  color: #34495e;
+}
+
+.simulacro-message {
+  background-color: #eaf2f8;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.simulacro-message p {
+  color: #34495e;
+}
+
+.actions-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .results-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .score-display {
+    margin-bottom: 20px;
+  }
+  
+  .results-details {
+    flex-wrap: wrap;
+  }
+  
+  .detail-item {
+    flex: 1;
+    min-width: calc(50% - 10px);
+  }
+  
+  .navigation-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    max-width: none;
+  }
+}
