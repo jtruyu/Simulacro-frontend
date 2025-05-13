@@ -257,8 +257,8 @@ function App() {
     
     try {
       const endpoint = tipoPrueba === "diagnostico" 
-        ? "https://backend-mvp-a6w0.onrender.com/guardar-resultado" 
-        : "https://backend-mvp-a6w0.onrender.com/guardar-simulacro";
+        ? "https://mi-proyecto-fastapi.onrender.com/guardar-resultado" 
+        : "hhttps://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
       
       await axios.post(endpoint, {
         nombre: datosUsuario.nombre,
