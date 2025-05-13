@@ -1,524 +1,566 @@
-/* Estilos generales */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background-color: #f5f7fa;
-}
-
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Pantalla de inicio */
-.inicio-container {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.inicio-container h1 {
-  margin-bottom: 30px;
-  color: #2c3e50;
-  font-size: 2.5rem;
-}
-
-.inicio-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-}
-
-.inicio-content p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.boton-iniciar {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  margin-top: 20px;
-}
-
-.boton-iniciar:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-.boton-iniciar:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Pantalla de formulario (al final del test) */
-.formulario-container {
-  align-items: center;
-  text-align: center;
-}
-
-.formulario-container h1 {
-  margin-bottom: 30px;
-  color: #2c3e50;
-  font-size: 2.5rem;
-}
-
-.formulario-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.formulario-content p {
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  color: #34495e;
-}
-
-.formulario-registro {
-  text-align: left;
-}
-
-.campo-formulario {
-  margin-bottom: 20px;
-}
-
-.campo-formulario label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.campo-formulario input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border 0.3s;
-}
-
-.campo-formulario input:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-.formulario-info {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-}
-
-.boton-ver-resultados {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.boton-ver-resultados:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-.boton-ver-resultados:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Pantalla de simulacro */
-.simulacro-container {
-  gap: 20px;
-}
-
-.encabezado-simulacro {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.progreso {
-  flex-grow: 1;
-  margin-right: 20px;
-}
-
-.texto-progreso {
-  font-size: 0.9rem;
-  margin-bottom: 5px;
-  color: #555;
-}
-
-.barra-progreso {
-  height: 8px;
-  background-color: #ecf0f1;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progreso-completado {
-  height: 100%;
-  background-color: #3498db;
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.temporizador {
-  background-color: #f8f9fa;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-weight: bold;
-  color: #e74c3c;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.pregunta-container {
-  background-color: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
-
-.ejercicio-texto {
-  margin-bottom: 20px;
-  color: #2c3e50;
-  font-size: 1.3rem;
-}
-
-.imagen-ejercicio {
-  max-width: 100%;
-  margin: 15px 0;
-  display: block;
-  border: 1px solid #eee;
-  border-radius: 6px;
-}
-
-.opciones-lista {
-  list-style-type: none;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.opcion {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  transition: all 0.3s;
-  min-width: 200px;
-  width: 100%;
-  display: block;
-}
-
-.opcion:hover {
-  background-color: #f5f7fa;
-}
-
-.opcion label {
-  display: flex;
-  align-items: flex-start;
-  cursor: pointer;
-  width: 100%;
-}
-
-.opcion input[type="radio"] {
-  margin-right: 12px;
-  margin-top: 3px;
-  flex-shrink: 0;
-}
-
-.texto-opcion-container {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  margin-left: 20px;
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.letra-opcion {
-  margin-right: 5px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.texto-opcion {
-  flex: 1;
-  display: inline-block;
-  padding-right: 10px;
-  font-size: 1.3rem;
-}
-
-.controles-navegacion {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.boton-nav,
-.boton-finalizar {
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.boton-nav {
-  background-color: white;
-  color: #2c3e50;
-  border: 1px solid #bdc3c7;
-}
-
-.boton-nav:hover {
-  background-color: #f5f7fa;
-}
-
-.boton-nav:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.boton-finalizar {
-  background-color: #27ae60;
-  color: white;
-  border: none;
-}
-
-.boton-finalizar:hover {
-  background-color: #219653;
-}
-
-/* Pantalla de resultados */
-.resultados-container {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  margin: 20px auto;
-  max-width: 800px;
-}
-
-.resultados-container h1 {
-  color: #2c3e50;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.datos-usuario {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.datos-usuario p {
-  margin-bottom: 8px;
-}
-
-.resumen-resultados {
-  display: flex;
-  justify-content: space-around;
-  margin: 30px 0;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.estadistica {
-  text-align: center;
-  min-width: 120px;
-  padding: 15px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.estadistica.correcta {
-  background-color: #d5f5e3;
-}
-
-.estadistica.incorrecta {
-  background-color: #fadbd8;
-}
-
-.valor {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #2c3e50;
-}
-
-.etiqueta {
-  font-size: 0.9rem;
-  color: #7f8c8d;
-}
-
-.comentario-resultado {
-  background-color: #eaf2f8;
-  padding: 20px;
-  border-radius: 8px;
-  margin: 30px 0;
-  border-left: 5px solid #3498db;
-}
-
-.comentario-resultado h2 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-size: 1.3rem;
-}
-
-.comentario-resultado p {
-  line-height: 1.6;
-  color: #34495e;
-}
-
-.lista-detalles {
-  margin: 25px 0;
-}
-
-.detalle-pregunta {
-  display: flex;
-  margin-bottom: 15px;
-  padding: 15px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-}
-
-.detalle-pregunta.correcta {
-  border-left: 5px solid #27ae60;
-}
-
-.detalle-pregunta.incorrecta {
-  border-left: 5px solid #e74c3c;
-}
-
-.detalle-pregunta.sin-responder {
-  border-left: 5px solid #f39c12;
-}
-
-.numero-pregunta {
-  background-color: #3498db;
-  color: white;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  margin-right: 15px;
-  flex-shrink: 0;
-}
-
-.contenido-detalle {
-  flex: 1;
-}
-
-.texto-ejercicio {
-  margin-bottom: 10px;
-  color: #2c3e50;
-}
-
-.respuesta-detalle {
-  font-size: 0.95rem;
-}
-
-.estado-respuesta {
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-}
-
-.estado-respuesta.correcta {
-  background-color: #d5f5e3;
-  color: #27ae60;
-}
-
-.estado-respuesta.incorrecta {
-  background-color: #fadbd8;
-  color: #e74c3c;
-}
-
-.estado-respuesta.sin-responder {
-  background-color: #fef9e7;
-  color: #f39c12;
-}
-
-.boton-reiniciar {
-  display: block;
-  margin: 30px auto 0;
-  padding: 12px 30px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.boton-reiniciar:hover {
-  background-color: #2980b9;
-}
-
-/* Pantalla de carga */
-.cargando-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./App.css";
+
+function App() {
+  const [preguntas, setPreguntas] = useState([]);
+  const [respuestas, setRespuestas] = useState({});
+  const [resultados, setResultados] = useState({});
+  const [preguntaActual, setPreguntaActual] = useState(0);
+  const [cargando, setCargando] = useState(false);
+  const [pantalla, setPantalla] = useState("inicio");
+  const [tiempo, setTiempo] = useState(0);
+  const [tiempoInicial, setTiempoInicial] = useState(0);
+  const [tiempoActivo, setTiempoActivo] = useState(false);
+  const [tipoPrueba, setTipoPrueba] = useState("");
+  
+  const [datosUsuario, setDatosUsuario] = useState({
+    nombre: "",
+    correo: ""
+  });
+  
+  const [comentarioResultado, setComentarioResultado] = useState("");
+  const [resultadosTemporales, setResultadosTemporales] = useState(null);
+
+  useEffect(() => {
+    let intervalo;
+    if (tiempoActivo && tiempo > 0) {
+      intervalo = setInterval(() => {
+        setTiempo((tiempoAnterior) => tiempoAnterior - 1);
+      }, 1000);
+    } else if (tiempo === 0 && tiempoInicial > 0) {
+      finalizarPrueba();
+    }
+
+    return () => clearInterval(intervalo);
+  }, [tiempoActivo, tiempo]);
+
+  useEffect(() => {
+    if (window.MathJax && preguntas.length > 0) {
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado"))
+        .catch((err) => console.error("MathJax error:", err));
+    }
+  }, [preguntaActual, preguntas]);
+
+  useEffect(() => {
+    if (pantalla === "resultados" && window.MathJax) {
+      window.MathJax.typesetPromise()
+        .then(() => console.log("MathJax renderizado en resultados"))
+        .catch((err) => console.error("MathJax error en resultados:", err));
+    }
+  }, [pantalla]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setDatosUsuario({
+      ...datosUsuario,
+      [name]: value
+    });
+  };
+
+  const validarFormulario = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return datosUsuario.nombre.trim() !== "" && emailRegex.test(datosUsuario.correo);
+  };
+
+  const obtenerOrdenCurso = (curso) => {
+    const ordenCursos = {
+      "RM": 1,
+      "Aritmética": 2,
+      "Álgebra": 3,
+      "Geometría": 4,
+      "Trigonometría": 5,
+      "Física": 6,
+      "Química": 7
+    };
+    
+    return ordenCursos[curso] || 999;
+  };
+    
+  const iniciarDiagnostico = async () => {
+    setTipoPrueba("diagnostico");
+    setCargando(true);
+    setRespuestas({});
+    setResultados({});
+    setPreguntaActual(0);
+    setTiempo(40 * 60);
+    setTiempoInicial(40 * 60);
+    setTiempoActivo(true);
+    setPantalla("simulacro");
+    
+    try {
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/diagnostico", {
+        params: { 
+          num_preguntas: 10
+        }
+      });
+  
+      if (response.data && response.data.length > 0) {
+        const preguntasOrdenadas = [...response.data].sort((a, b) => {
+          return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
+        });
+        
+        setPreguntas(preguntasOrdenadas);
+      } else {
+        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
+        setPantalla("inicio");
+      }
+    } catch (error) {
+      console.error("Error al obtener preguntas:", error);
+      alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
+      setPantalla("inicio");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const iniciarSimulacro = async () => {
+    setTipoPrueba("simulacro");
+    setCargando(true);
+    setRespuestas({});
+    setResultados({});
+    setPreguntaActual(0);
+    setTiempo(120 * 60);
+    setTiempoInicial(120 * 60);
+    setTiempoActivo(true);
+    setPantalla("simulacro");
+    
+    try {
+      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro");
+  
+      if (response.data && response.data.length > 0) {
+        const preguntasOrdenadas = [...response.data].sort((a, b) => {
+          return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
+        });
+        
+        setPreguntas(preguntasOrdenadas);
+      } else {
+        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
+        setPantalla("inicio");
+      }
+    } catch (error) {
+      console.error("Error al obtener preguntas:", error);
+      alert("Error al cargar las preguntas. Por favor, intenta de nuevo.");
+      setPantalla("inicio");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const seleccionarRespuesta = (ejercicio, letra) => {
+    setRespuestas((prevRespuestas) => ({
+      ...prevRespuestas,
+      [ejercicio]: letra,
+    }));
+  };
+
+  const siguientePregunta = () => {
+    if (preguntaActual < preguntas.length - 1) {
+      setPreguntaActual(preguntaActual + 1);
+    }
+  };
+
+  const preguntaAnterior = () => {
+    if (preguntaActual > 0) {
+      setPreguntaActual(preguntaActual - 1);
+    }
+  };
+
+  const calcularPuntajePorCurso = (curso) => {
+    switch (curso) {
+      case "RM":
+      case "RV":
+        return 0.63;
+      case "Aritmética":
+      case "Álgebra":
+      case "Geometría":
+      case "Trigonometría":
+        return 0.76;
+      case "Física":
+        return 0.81;
+      case "Química":
+        return 0.46;
+      default:
+        return 0.7;
+    }
+  };
+
+  const obtenerComentario = (notaVigesimal) => {
+    if (tipoPrueba === "diagnostico") {
+      if (notaVigesimal < 10) {
+        return "Es necesario fortalecer tu base para el examen de admisión a la UNI. Te animamos a practicar con dedicación y a revisar los conceptos fundamentales.";
+      } else if (notaVigesimal < 14) {
+        return "Tienes potencial para lograr el ingreso a la UNI, pero se requiere mayor consistencia. Identifica tus áreas de oportunidad y trabaja intensamente en ellas.";
+      } else if (notaVigesimal < 18) {
+        return "¡Vas por buen camino! Estás demostrando un buen nivel de preparación. Continúa practicando para afianzar tus conocimientos y aumentar tus posibilidades de éxito.";
+      } else {
+        return "¡Excelente desempeño! Tu preparación te posiciona para competir por los primeros puestos. ¡Sigue así y alcanzarás tus metas!";
+      }
+    } else {
+      return "Los resultados detallados de tu simulacro serán enviados a tu correo electrónico. Revisa tu bandeja de entrada en las próximas horas.";
+    }
+  };
+
+  const finalizarPrueba = () => {
+    setTiempoActivo(false);
+    
+    let nuevosResultados = {};
+    let preguntasCorrectas = 0;
+    let preguntasIncorrectas = 0;
+    let preguntasSinResponder = 0;
+    let notaTotal = 0;
+    
+    preguntas.forEach((pregunta) => {
+      const respuestaUsuario = respuestas[pregunta.ejercicio];
+      
+      if (!respuestaUsuario) {
+        nuevosResultados[pregunta.ejercicio] = "Sin responder";
+        preguntasSinResponder++;
+      } else if (respuestaUsuario === pregunta.respuesta_correcta) {
+        nuevosResultados[pregunta.ejercicio] = "Correcta";
+        preguntasCorrectas++;
+        notaTotal += calcularPuntajePorCurso(pregunta.curso);
+      } else {
+        nuevosResultados[pregunta.ejercicio] = `Incorrecta (Respuesta: ${pregunta.respuesta_correcta})`;
+        preguntasIncorrectas++;
+      }
+    });
+    
+    const porcentaje = (preguntasCorrectas / preguntas.length) * 100;
+    notaTotal = Math.min(notaTotal, 20);
+    const tiempoUsado = tiempoInicial - tiempo;
+    
+    setResultadosTemporales({
+      detalles: nuevosResultados,
+      correctas: preguntasCorrectas,
+      incorrectas: preguntasIncorrectas,
+      sinResponder: preguntasSinResponder,
+      porcentaje: porcentaje,
+      notaVigesimal: notaTotal,
+      tiempoUsado: tiempoUsado,
+      respuestas: respuestas
+    });
+    
+    setComentarioResultado(obtenerComentario(notaTotal));
+    setPantalla("formulario");
+  };
+
+  const procesarFormulario = async () => {
+    if (!validarFormulario()) {
+      alert("Por favor, completa correctamente todos los campos del formulario");
+      return;
+    }
+
+    setResultados(resultadosTemporales);
+    
+    try {
+      const endpoint = tipoPrueba === "diagnostico" 
+        ? "https://mi-proyecto-fastapi.onrender.com/guardar-diagnostico" 
+        : "https://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
+      
+      const dataToSend = {
+        nombre: datosUsuario.nombre,
+        correo: datosUsuario.correo,
+        resultado: resultadosTemporales.notaVigesimal,
+        preguntas_correctas: resultadosTemporales.correctas,
+        preguntas_incorrectas: resultadosTemporales.incorrectas,
+        preguntas_sin_responder: resultadosTemporales.sinResponder,
+        tiempo_usado: resultadosTemporales.tiempoUsado,
+        respuestas: JSON.stringify(resultadosTemporales.respuestas)
+      };
+
+      console.log("Datos a enviar:", dataToSend);
+      
+      const response = await axios.post(endpoint, dataToSend);
+      console.log("Respuesta del servidor:", response.data);
+    } catch (error) {
+      console.error("Error al guardar el resultado:", error.response ? error.response.data : error.message);
+      alert("Hubo un error al guardar tus resultados. Por favor intenta nuevamente.");
+    }
+    
+    setPantalla("resultados");
+  };
+
+  const formatoTiempo = (segundos) => {
+    const minutos = Math.floor(segundos / 60);
+    const segundosRestantes = segundos % 60;
+    return `${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
+  };
+  
+  if (pantalla === "inicio") {
+    return (
+      <div className="container inicio-container">
+        <header className="header">
+          <h1>EDBOT</h1>
+          <p>Preparación preuniversitaria implementada con IA</p>
+        </header>
+        
+        <div className="card inicio-card">
+          <div className="card-header">
+            <h2>Evalúa tu preparación</h2>
+          </div>
+          
+          <div className="card-body">
+            <div className="test-option">
+              <h3>Prueba de diagnóstico</h3>
+              <p>10 ejercicios • 40 minutos</p>
+              <p>Evalúa tu nivel actual con preguntas clave</p>
+              <button className="btn-primary" onClick={iniciarDiagnostico}>
+                Comenzar
+              </button>
+            </div>
+            
+            <div className="divider">o</div>
+            
+            <div className="test-option">
+              <h3>Simulacro completo</h3>
+              <p>30 ejercicios • 120 minutos</p>
+              <p>Simulación real del examen de admisión</p>
+              <button className="btn-primary" onClick={iniciarSimulacro}>
+                Comenzar
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <footer className="footer">
+          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
+        </footer>
+      </div>
+    );
   }
-  100% {
-    transform: rotate(360deg);
+  
+  if (pantalla === "formulario") {
+    return (
+      <div className="container formulario-container">
+        <header className="header">
+          <h1>EDBOT</h1>
+          <p>Preparación preuniversitaria implementada con IA</p>
+        </header>
+        
+        <div className="card">
+          <div className="card-header">
+            <h2>{tipoPrueba === "diagnostico" ? "¡Prueba completada!" : "¡Simulacro completado!"}</h2>
+          </div>
+          
+          <div className="card-body">
+            <p className="form-description">Por favor, completa tus datos para {tipoPrueba === "diagnostico" ? "ver tus resultados" : "recibir tus resultados por correo"}:</p>
+            
+            <form className="formulario-registro">
+              <div className="campo-formulario">
+                <label htmlFor="nombre">Nombre completo:</label>
+                <input 
+                  type="text" 
+                  id="nombre" 
+                  name="nombre" 
+                  value={datosUsuario.nombre}
+                  onChange={handleInputChange}
+                  placeholder="Ingresa tu nombre completo"
+                  required
+                />
+              </div>
+              
+              <div className="campo-formulario">
+                <label htmlFor="correo">Correo electrónico:</label>
+                <input 
+                  type="email" 
+                  id="correo" 
+                  name="correo" 
+                  value={datosUsuario.correo}
+                  onChange={handleInputChange}
+                  placeholder="Ingresa tu correo electrónico"
+                  required
+                />
+              </div>
+              
+              <div className="form-info">
+                <p>Estos datos nos permitirán {tipoPrueba === "diagnostico" ? "mostrarte tus resultados y recomendaciones" : "enviarte los resultados detallados de tu simulacro"}.</p>
+              </div>
+              
+              <button 
+                type="button" 
+                className="btn-primary" 
+                onClick={procesarFormulario} 
+                disabled={!validarFormulario()}
+              >
+                {tipoPrueba === "diagnostico" ? "Ver mis resultados" : "Enviar mis resultados"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
   }
+  
+  if (pantalla === "simulacro" && preguntas.length > 0) {
+    const pregunta = preguntas[preguntaActual];
+    const progreso = ((preguntaActual + 1) / preguntas.length) * 100;
+    
+    return (
+      <div className="container test-container">
+        <div className="test-header">
+          <div className="progress-container">
+            <div className="progress-bar" style={{ width: `${progreso}%` }}></div>
+            <span className="progress-text">
+              Pregunta {preguntaActual + 1} de {preguntas.length}
+            </span>
+          </div>
+          <div className="timer">
+            <span className="timer-icon">⏱️</span>
+            {formatoTiempo(tiempo)}
+          </div>
+        </div>
+        
+        <div className="question-card">
+          <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
+          
+          {pregunta.imagen && (
+            <div className="question-image">
+              <img src={pregunta.imagen} alt="Ejercicio" />
+            </div>
+          )}
+          
+          <div className="options-container">
+            {pregunta.alternativas.map((alt) => (
+              <div 
+                key={alt.letra} 
+                className={`option ${respuestas[pregunta.ejercicio] === alt.letra ? 'selected' : ''}`}
+                onClick={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+              >
+                <span className="option-letter">{alt.letra}</span>
+                <span className="option-text" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="navigation-buttons">
+          <button 
+            className="btn-secondary" 
+            onClick={preguntaAnterior} 
+            disabled={preguntaActual === 0}
+          >
+            Anterior
+          </button>
+          
+          {preguntaActual === preguntas.length - 1 ? (
+            <button className="btn-primary" onClick={finalizarPrueba}>
+              Finalizar prueba
+            </button>
+          ) : (
+            <button className="btn-primary" onClick={siguientePregunta}>
+              Siguiente
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+  
+  if (pantalla === "resultados") {
+    return (
+      <div className="container results-container">
+        <header className="header">
+          <h1>EDBOT</h1>
+          <p>Preparación preuniversitaria implementada con IA</p>
+        </header>
+        
+        <div className="card results-card">
+          <div className="card-header">
+            <h2>Resultados {tipoPrueba === "diagnostico" ? "del diagnóstico" : "del simulacro"}</h2>
+          </div>
+          
+          <div className="card-body">
+            <div className="user-data">
+              <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
+              <p><strong>Correo:</strong> {datosUsuario.correo}</p>
+              <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>
+            </div>
+            
+            <div className="results-summary">
+              <div className="score-display">
+                <div className="score-value">{resultados.notaVigesimal.toFixed(1)}</div>
+                <div className="score-label">Puntuación (0-20)</div>
+              </div>
+              
+              <div className="results-details">
+                <div className="detail-item correct">
+                  <span className="detail-value">{resultados.correctas}</span>
+                  <span className="detail-label">Correctas</span>
+                </div>
+                <div className="detail-item incorrect">
+                  <span className="detail-value">{resultados.incorrectas}</span>
+                  <span className="detail-label">Incorrectas</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-value">{resultados.sinResponder}</span>
+                  <span className="detail-label">Sin responder</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="feedback-section">
+              <h3>Evaluación de tu desempeño</h3>
+              <p>{comentarioResultado}</p>
+            </div>
+            
+            {tipoPrueba === "diagnostico" && (
+              <div className="answers-review">
+                <h3>Detalle de respuestas</h3>
+                {preguntas.map((pregunta, index) => (
+                  <div key={index} className={`answer-item ${
+                    !respuestas[pregunta.ejercicio] 
+                      ? 'unanswered' 
+                      : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta 
+                        ? 'correct' 
+                        : 'incorrect'
+                  }`}>
+                    <div className="question-number">{index + 1}</div>
+                    <div className="question-content">
+                      <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
+                      <div className="answer-status">
+                        {!respuestas[pregunta.ejercicio] ? (
+                          <span>Sin responder</span>
+                        ) : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta ? (
+                          <span>Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)</span>
+                        ) : (
+                          <span>Tu respuesta: {respuestas[pregunta.ejercicio]} • Correcta: {pregunta.respuesta_correcta}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {tipoPrueba === "simulacro" && (
+              <div className="simulacro-message">
+                <p>Los resultados detallados de tu simulacro serán enviados a tu correo electrónico.</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="actions-container">
+          <button className="btn-primary" onClick={() => setPantalla("inicio")}>
+            Volver al inicio
+          </button>
+        </div>
+        
+        <footer className="footer">
+          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
+        </footer>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container loading-container">
+      <div className="spinner"></div>
+      <p>Cargando {tipoPrueba === "diagnostico" ? "prueba de diagnóstico" : "simulacro"}...</p>
+    </div>
+  );
 }
+
+export default App;
