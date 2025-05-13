@@ -12,7 +12,7 @@ function App() {
   const [tiempo, setTiempo] = useState(0);
   const [tiempoInicial, setTiempoInicial] = useState(0);
   const [tiempoActivo, setTiempoActivo] = useState(false);
-  const [tipoPrueba, setTipoPrueba] = useState(""); // 'diagnostico' o 'simulacro'
+  const [tipoPrueba, setTipoPrueba] = useState("");
   
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: "",
@@ -84,7 +84,7 @@ function App() {
     setRespuestas({});
     setResultados({});
     setPreguntaActual(0);
-    setTiempo(40 * 60); // 40 minutos
+    setTiempo(40 * 60);
     setTiempoInicial(40 * 60);
     setTiempoActivo(true);
     setPantalla("simulacro");
@@ -121,7 +121,7 @@ function App() {
     setRespuestas({});
     setResultados({});
     setPreguntaActual(0);
-    setTiempo(120 * 60); // 120 minutos (2 horas)
+    setTiempo(120 * 60);
     setTiempoInicial(120 * 60);
     setTiempoActivo(true);
     setPantalla("simulacro");
@@ -198,7 +198,6 @@ function App() {
         return "¡Excelente desempeño! Tu preparación te posiciona para competir por los primeros puestos. ¡Sigue así y alcanzarás tus metas!";
       }
     } else {
-      // Comentario para simulacro
       return "Los resultados detallados de tu simulacro serán enviados a tu correo electrónico. Revisa tu bandeja de entrada en las próximas horas.";
     }
   };
@@ -260,7 +259,7 @@ function App() {
         ? "https://mi-proyecto-fastapi.onrender.com/guardar-resultado" 
         : "https://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
       
-      await axios.post(endpoint, {
+      const dataToSend = {
         nombre: datosUsuario.nombre,
         correo: datosUsuario.correo,
         resultado: resultadosTemporales.notaVigesimal,
@@ -269,10 +268,15 @@ function App() {
         preguntas_sin_responder: resultadosTemporales.sinResponder,
         tiempo_usado: resultadosTemporales.tiempoUsado,
         respuestas: JSON.stringify(resultadosTemporales.respuestas)
-      });
-      console.log("Resultado guardado con éxito");
+      };
+
+      console.log("Datos a enviar:", dataToSend);
+      
+      const response = await axios.post(endpoint, dataToSend);
+      console.log("Respuesta del servidor:", response.data);
     } catch (error) {
-      console.error("Error al guardar el resultado:", error);
+      console.error("Error al guardar el resultado:", error.response ? error.response.data : error.message);
+      alert("Hubo un error al guardar tus resultados. Por favor intenta nuevamente.");
     }
     
     setPantalla("resultados");
