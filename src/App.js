@@ -291,42 +291,22 @@ function App() {
   if (pantalla === "inicio") {
     return (
       <div className="container inicio-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
-        
-        <div className="card inicio-card">
-          <div className="card-header">
-            <h2>Evalúa tu preparación</h2>
-          </div>
+        <h1>EDBOT<br />Preparación preuniversitaria implementada con IA</h1>
+        <div className="inicio-content">
+          <h2>Prueba de diagnóstico</h2>
+          <p>Esta prueba de diagnóstico contiene 10 ejercicios seleccionados de exámenes de admisión a la Universidad Nacional de Ingeniería (UNI), que te permitirán evaluar tu nivel de preparación.</p>
+          <p>Dispondrás de 40 minutos para resolverlos.</p>
+          <button className="boton-iniciar" onClick={iniciarDiagnostico}>
+            Comenzar diagnóstico
+          </button>
           
-          <div className="card-body">
-            <div className="test-option">
-              <h3>Prueba de diagnóstico</h3>
-              <p>10 ejercicios • 40 minutos</p>
-              <p>Evalúa tu nivel actual con preguntas clave</p>
-              <button className="btn-primary" onClick={iniciarDiagnostico}>
-                Comenzar
-              </button>
-            </div>
-            
-            <div className="divider">o</div>
-            
-            <div className="test-option">
-              <h3>Simulacro completo</h3>
-              <p>30 ejercicios • 120 minutos</p>
-              <p>Simulación real del examen de admisión</p>
-              <button className="btn-primary" onClick={iniciarSimulacro}>
-                Comenzar
-              </button>
-            </div>
-          </div>
+          <h2 style={{marginTop: '40px'}}>Simulacro</h2>
+          <p>Este simulacro completo contiene 30 ejercicios similares a los del examen de admisión de la UNI, que te permitirán evaluar tu nivel de preparación en condiciones reales.</p>
+          <p>Dispondrás de 2 horas para resolverlos (tiempo real del examen).</p>
+          <button className="boton-iniciar" onClick={iniciarSimulacro}>
+            Comenzar simulacro
+          </button>
         </div>
-        
-        <footer className="footer">
-          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
-        </footer>
       </div>
     );
   }
@@ -334,60 +314,50 @@ function App() {
   if (pantalla === "formulario") {
     return (
       <div className="container formulario-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
-        
-        <div className="card">
-          <div className="card-header">
-            <h2>{tipoPrueba === "diagnostico" ? "¡Prueba completada!" : "¡Simulacro completado!"}</h2>
-          </div>
+        <h1>{tipoPrueba === "diagnostico" ? "¡Prueba completada!" : "¡Simulacro completado!"}</h1>
+        <div className="formulario-content">
+          <p>Por favor, completa tus datos para {tipoPrueba === "diagnostico" ? "ver tus resultados" : "recibir tus resultados por correo"}:</p>
           
-          <div className="card-body">
-            <p className="form-description">Por favor, completa tus datos para {tipoPrueba === "diagnostico" ? "ver tus resultados" : "recibir tus resultados por correo"}:</p>
+          <form className="formulario-registro">
+            <div className="campo-formulario">
+              <label htmlFor="nombre">Nombre completo:</label>
+              <input 
+                type="text" 
+                id="nombre" 
+                name="nombre" 
+                value={datosUsuario.nombre}
+                onChange={handleInputChange}
+                placeholder="Ingresa tu nombre completo"
+                required
+              />
+            </div>
             
-            <form className="formulario-registro">
-              <div className="campo-formulario">
-                <label htmlFor="nombre">Nombre completo:</label>
-                <input 
-                  type="text" 
-                  id="nombre" 
-                  name="nombre" 
-                  value={datosUsuario.nombre}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa tu nombre completo"
-                  required
-                />
-              </div>
-              
-              <div className="campo-formulario">
-                <label htmlFor="correo">Correo electrónico:</label>
-                <input 
-                  type="email" 
-                  id="correo" 
-                  name="correo" 
-                  value={datosUsuario.correo}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa tu correo electrónico"
-                  required
-                />
-              </div>
-              
-              <div className="form-info">
-                <p>Estos datos nos permitirán {tipoPrueba === "diagnostico" ? "mostrarte tus resultados y recomendaciones" : "enviarte los resultados detallados de tu simulacro"}.</p>
-              </div>
-              
-              <button 
-                type="button" 
-                className="btn-primary" 
-                onClick={procesarFormulario} 
-                disabled={!validarFormulario()}
-              >
-                {tipoPrueba === "diagnostico" ? "Ver mis resultados" : "Enviar mis resultados"}
-              </button>
-            </form>
-          </div>
+            <div className="campo-formulario">
+              <label htmlFor="correo">Correo electrónico:</label>
+              <input 
+                type="email" 
+                id="correo" 
+                name="correo" 
+                value={datosUsuario.correo}
+                onChange={handleInputChange}
+                placeholder="Ingresa tu correo electrónico"
+                required
+              />
+            </div>
+            
+            <div className="formulario-info">
+              <p>Estos datos nos permitirán {tipoPrueba === "diagnostico" ? "mostrarte tus resultados y recomendaciones" : "enviarte los resultados detallados de tu simulacro"}.</p>
+            </div>
+            
+            <button 
+              type="button" 
+              className="boton-ver-resultados" 
+              onClick={procesarFormulario} 
+              disabled={!validarFormulario()}
+            >
+              {tipoPrueba === "diagnostico" ? "Ver mis resultados" : "Enviar mis resultados"}
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -395,49 +365,53 @@ function App() {
   
   if (pantalla === "simulacro" && preguntas.length > 0) {
     const pregunta = preguntas[preguntaActual];
-    const progreso = ((preguntaActual + 1) / preguntas.length) * 100;
     
     return (
-      <div className="container test-container">
-        <div className="test-header">
-          <div className="progress-container">
-            <div className="progress-bar" style={{ width: `${progreso}%` }}></div>
-            <span className="progress-text">
-              Pregunta {preguntaActual + 1} de {preguntas.length}
-            </span>
-          </div>
-          <div className="timer">
-            <span className="timer-icon">⏱️</span>
-            {formatoTiempo(tiempo)}
-          </div>
-        </div>
-        
-        <div className="question-card">
-          <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
-          
-          {pregunta.imagen && (
-            <div className="question-image">
-              <img src={pregunta.imagen} alt="Ejercicio" />
-            </div>
-          )}
-          
-          <div className="options-container">
-            {pregunta.alternativas.map((alt) => (
+      <div className="container simulacro-container">
+        <div className="encabezado-simulacro">
+          <div className="progreso">
+            <div className="texto-progreso">Pregunta: {preguntaActual + 1} de {preguntas.length}</div>
+            <div className="barra-progreso">
               <div 
-                key={alt.letra} 
-                className={`option ${respuestas[pregunta.ejercicio] === alt.letra ? 'selected' : ''}`}
-                onClick={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
-              >
-                <span className="option-letter">{alt.letra}</span>
-                <span className="option-text" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-              </div>
-            ))}
+                className="progreso-completado" 
+                style={{ width: `${((preguntaActual + 1) / preguntas.length) * 100}%` }}
+              ></div>
+            </div>
           </div>
+          <div className="temporizador">⏱️ {formatoTiempo(tiempo)}</div>
         </div>
         
-        <div className="navigation-buttons">
+        <div className="pregunta-container" key={pregunta.ejercicio}>
+          <h2 className="ejercicio-texto">
+            <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
+          </h2>
+
+          {pregunta.imagen && (
+            <img src={pregunta.imagen} alt="Ejercicio" className="imagen-ejercicio" />
+          )}
+
+          <ul className="opciones-lista">
+            {pregunta.alternativas.map((alt) => (
+              <li key={alt.letra} className="opcion">
+                <label>
+                  <input
+                    type="radio"
+                    name={`pregunta-${pregunta.ejercicio}`}
+                    value={alt.letra}
+                    checked={respuestas[pregunta.ejercicio] === alt.letra}
+                    onChange={() => seleccionarRespuesta(pregunta.ejercicio, alt.letra)}
+                  />
+                  <span className="texto-opcion">{alt.letra}: </span>
+                  <span className="texto-opcion" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className="controles-navegacion">
           <button 
-            className="btn-secondary" 
+            className="boton-nav" 
             onClick={preguntaAnterior} 
             disabled={preguntaActual === 0}
           >
@@ -445,11 +419,14 @@ function App() {
           </button>
           
           {preguntaActual === preguntas.length - 1 ? (
-            <button className="btn-primary" onClick={finalizarPrueba}>
-              Finalizar prueba
+            <button className="boton-finalizar" onClick={finalizarPrueba}>
+              Finalizar {tipoPrueba === "diagnostico" ? "prueba" : "simulacro"}
             </button>
           ) : (
-            <button className="btn-primary" onClick={siguientePregunta}>
+            <button 
+              className="boton-nav" 
+              onClick={siguientePregunta}
+            >
               Siguiente
             </button>
           )}
@@ -460,103 +437,96 @@ function App() {
   
   if (pantalla === "resultados") {
     return (
-      <div className="container results-container">
-        <header className="header">
-          <h1>EDBOT</h1>
-          <p>Preparación preuniversitaria implementada con IA</p>
-        </header>
+      <div className="container resultados-container">
+        <h1>{tipoPrueba === "diagnostico" ? "Resultados del Diagnóstico" : "Simulacro Completado"}</h1>
         
-        <div className="card results-card">
-          <div className="card-header">
-            <h2>Resultados {tipoPrueba === "diagnostico" ? "del diagnóstico" : "del simulacro"}</h2>
-          </div>
-          
-          <div className="card-body">
-            <div className="user-data">
-              <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
-              <p><strong>Correo:</strong> {datosUsuario.correo}</p>
-              <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>
-            </div>
-            
-            <div className="results-summary">
-              <div className="score-display">
-                <div className="score-value">{resultados.notaVigesimal.toFixed(1)}</div>
-                <div className="score-label">Puntuación (0-20)</div>
+        <div className="datos-usuario">
+          <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
+          <p><strong>Correo:</strong> {datosUsuario.correo}</p>
+          <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>
+        </div>
+        
+        {tipoPrueba === "diagnostico" && (
+          <>
+            <div className="resumen-resultados">
+              <div className="estadistica correcta">
+                <div className="valor">{resultados.correctas}</div>
+                <div className="etiqueta">Correctas</div>
               </div>
-              
-              <div className="results-details">
-                <div className="detail-item correct">
-                  <span className="detail-value">{resultados.correctas}</span>
-                  <span className="detail-label">Correctas</span>
-                </div>
-                <div className="detail-item incorrect">
-                  <span className="detail-value">{resultados.incorrectas}</span>
-                  <span className="detail-label">Incorrectas</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-value">{resultados.sinResponder}</span>
-                  <span className="detail-label">Sin responder</span>
-                </div>
+              <div className="estadistica incorrecta">
+                <div className="valor">{resultados.incorrectas}</div>
+                <div className="etiqueta">Incorrectas</div>
+              </div>
+              <div className="estadistica">
+                <div className="valor">{resultados.sinResponder}</div>
+                <div className="etiqueta">Sin responder</div>
+              </div>
+              <div className="estadistica">
+                <div className="valor">{resultados.notaVigesimal.toFixed(1)}</div>
+                <div className="etiqueta">Nota (0-20)</div>
               </div>
             </div>
             
-            <div className="feedback-section">
-              <h3>Evaluación de tu desempeño</h3>
+            <div className="comentario-resultado">
+              <h2>Evaluación de tu desempeño</h2>
               <p>{comentarioResultado}</p>
             </div>
             
-            {tipoPrueba === "diagnostico" && (
-              <div className="answers-review">
-                <h3>Detalle de respuestas</h3>
-                {preguntas.map((pregunta, index) => (
-                  <div key={index} className={`answer-item ${
+            <h2>Detalle de respuestas</h2>
+            
+            <div className="lista-detalles">
+              {preguntas.map((pregunta, index) => (
+                <div 
+                  key={pregunta.ejercicio} 
+                  className={`detalle-pregunta ${
                     !respuestas[pregunta.ejercicio] 
-                      ? 'unanswered' 
+                      ? "sin-responder" 
                       : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta 
-                        ? 'correct' 
-                        : 'incorrect'
-                  }`}>
-                    <div className="question-number">{index + 1}</div>
-                    <div className="question-content">
-                      <div className="question-text" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
-                      <div className="answer-status">
-                        {!respuestas[pregunta.ejercicio] ? (
-                          <span>Sin responder</span>
-                        ) : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta ? (
-                          <span>Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)</span>
-                        ) : (
-                          <span>Tu respuesta: {respuestas[pregunta.ejercicio]} • Correcta: {pregunta.respuesta_correcta}</span>
-                        )}
-                      </div>
+                        ? "correcta" 
+                        : "incorrecta"
+                  }`}
+                >
+                  <div className="numero-pregunta">{index + 1}</div>
+                  <div className="contenido-detalle">
+                    <div className="texto-ejercicio" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
+                    <div className="respuesta-detalle">
+                      {!respuestas[pregunta.ejercicio] ? (
+                        <span className="estado-respuesta sin-responder">Sin responder</span>
+                      ) : respuestas[pregunta.ejercicio] === pregunta.respuesta_correcta ? (
+                        <span className="estado-respuesta correcta">
+                          Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)
+                        </span>
+                      ) : (
+                        <span className="estado-respuesta incorrecta">
+                          Incorrecta: Elegiste {respuestas[pregunta.ejercicio]}, 
+                          Correcta: {pregunta.respuesta_correcta}
+                        </span>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {tipoPrueba === "simulacro" && (
-              <div className="simulacro-message">
-                <p>Los resultados detallados de tu simulacro serán enviados a tu correo electrónico.</p>
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        
+        {tipoPrueba === "simulacro" && (
+          <div className="comentario-resultado">
+            <h2>¡Simulacro completado con éxito!</h2>
+            <p>{comentarioResultado}</p>
+            <p>Hemos registrado tus respuestas y calculado tu puntaje. Los resultados detallados, incluyendo tu desempeño por áreas y recomendaciones personalizadas, serán enviados a tu correo electrónico en las próximas horas.</p>
           </div>
-        </div>
+        )}
         
-        <div className="actions-container">
-          <button className="btn-primary" onClick={() => setPantalla("inicio")}>
-            Volver al inicio
-          </button>
-        </div>
-        
-        <footer className="footer">
-          <p>© {new Date().getFullYear()} EDBOT - Todos los derechos reservados</p>
-        </footer>
+        <button className="boton-reiniciar" onClick={() => setPantalla("inicio")}>
+          Volver al inicio
+        </button>
       </div>
     );
   }
   
   return (
-    <div className="container loading-container">
+    <div className="container cargando-container">
       <div className="spinner"></div>
       <p>Cargando {tipoPrueba === "diagnostico" ? "prueba de diagnóstico" : "simulacro"}...</p>
     </div>
