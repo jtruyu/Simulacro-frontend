@@ -217,7 +217,7 @@ body {
 }
 
 .texto-progreso {
-  font-size: 0.9rem;
+  font-size: 1.25rem; /* Modified: Increased size */
   margin-bottom: 5px;
   color: #555;
 }
@@ -253,7 +253,7 @@ body {
 .ejercicio-texto {
   margin-bottom: 25px; /* Más espacio */
   color: #212529; /* Negro más suave */
-  font-size: 1.25rem; /* Ligeramente más grande */
+  font-size: 1.25rem; /* Maintained size */
   line-height: 1.5;
 }
 .ejercicio-texto p { /* Estilos para párrafos dentro del dangerouslySetInnerHTML */
@@ -295,7 +295,7 @@ body {
   align-items: flex-start; /* Alinea radio button con inicio de texto más largo */
   cursor: pointer;
   width: 100%;
-  font-size: 1rem; /* Tamaño base para las opciones */
+  font-size: 1.25rem; /* Modified: Increased size to match ejercicio-texto */
 }
 
 .opcion input[type="radio"] {
@@ -466,7 +466,7 @@ body {
 }
 .lista-detalles h2 { /* Si tienes un título para la lista de detalles */
     margin-bottom: 20px;
-    font-size: 1.6rem;
+  font-size: 1.6rem;
     color: #2c3e50;
 }
 
