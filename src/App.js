@@ -35,7 +35,7 @@ function App() {
   useEffect(() => {
     let intervalId;
 
-    const updateSimulacroState = () => {
+    const updateSimulacroState = () => { // <<-- Función correctamente definida aquí
       const now = new Date(); // Hora actual del cliente
 
       if (now < SIMULACRO_START_TIME) {
@@ -82,8 +82,8 @@ function App() {
     };
 
     // Ejecutar la verificación inmediatamente y luego cada segundo
-    checkSimulacroAvailability();
-    intervalId = setInterval(updateSimulacroState, 1000);
+    updateSimulacroState(); // <<-- Corregido: Usar el nombre correcto de la función
+    intervalId = setInterval(updateSimulacroState, 1000); // <<-- Corregido: Usar el nombre correcto de la función
 
     // Limpiar el intervalo cuando el componente se desmonte o las dependencias cambien
     return () => clearInterval(intervalId);
