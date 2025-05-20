@@ -23,12 +23,18 @@ function App() {
   const [simulacroActivo, setSimulacroActivo] = useState(false);
   const [tiempoHastaInicio, setTiempoHastaInicio] = useState('');
   const [mensajeInicio, setMensajeInicio] = useState('');
+  const [inicioSimulacro, setInicioSimulacro] = useState(null); // Nuevo estado para almacenar la hora de inicio
+
 
   // Definir horas de inicio y fin del simulacro
   const horaInicioSimulacro = new Date();
   horaInicioSimulacro.setHours(23, 5, 0); // 11:05 PM
+  horaInicioSimulacro.setMinutes(5);
+  horaInicioSimulacro.setSeconds(0);
   const horaFinSimulacro = new Date();
   horaFinSimulacro.setHours(23, 10, 0); // 11:10 PM
+  horaFinSimulacro.setMinutes(10);
+  horaFinSimulacro.setSeconds(0);
 
   useEffect(() => {
     let intervalo;
@@ -69,11 +75,15 @@ function App() {
         const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
         setTiempoHastaInicio(`El simulacro comenzará en ${minutos}m ${segundos}s`);
         setMensajeInicio(`El simulacro comenzará en breve. Por favor, espere.`);
+        setSimulacroActivo(false); // Mantener el simulacro inactivo antes de la hora de inicio
       } else if (ahora >= horaInicioSimulacro && ahora < horaFinSimulacro) {
         // Simulacro activo
         setSimulacroActivo(true);
         setTiempoHastaInicio('');
         setMensajeInicio('¡El simulacro está activo! Haz clic en "Comenzar simulacro" para iniciar.');
+        if (!inicioSimulacro) {
+          setInicioSimulacro(new Date()); // Guarda la hora de inicio real
+        }
       } else {
         // Simulacro finalizado
         setSimulacroActivo(false);
@@ -149,6 +159,8 @@ function App() {
   };
 
   const iniciarSimulacro = async () => {
+    if (!simulacroActivo) return; // Previene el inicio si el simulacro no está activo
+
     setTipoPrueba("simulacro");
     setCargando(true);
     setRespuestas({});
@@ -320,7 +332,7 @@ function App() {
               <button
                 className="boton-iniciar"
                 onClick={iniciarSimulacro}
-                disabled={!simulacroActivo}
+                disabled={!simulacroActivo} // Deshabilitar si no está activo
               >
                 Comenzar simulacro
               </button>
