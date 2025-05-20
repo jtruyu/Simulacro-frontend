@@ -9,9 +9,9 @@ function App() {
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [cargando, setCargando] = useState(false);
   const [pantalla, setPantalla] = useState("inicio");
-  const [tiempo, setTiempo] = useState(0);
-  const [tiempoInicial, setTiempoInicial] = useState(0);
-  const [tiempoActivo, setTiempoActivo] = useState(false);
+  const [tiempo, setTiempo] = useState(0); // Tiempo restante en segundos
+  const [tiempoInicial, setTiempoInicial] = useState(0); // Tiempo inicial para la barra de progreso
+  const [tiempoActivo, setTiempoActivo] = useState(false); // Indica si el temporizador está corriendo
   const [tipoPrueba, setTipoPrueba] = useState("");
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: "",
@@ -20,139 +20,207 @@ function App() {
   const [comentarioResultado, setComentarioResultado] = useState("");
   const [resultadosTemporales, setResultadosTemporales] = useState(null);
 
+  // --- NUEVOS ESTADOS PARA HORAS FIJAS DEL SIMULACRO ---
+  // Define las horas fijas de inicio y fin del simulacro
+  // IMPORTANTE: Estas fechas/horas usan la zona horaria local del navegador del usuario.
+  // Para una hora fija global, se recomienda usar fechas UTC y convertirlas para mostrar.
+  // Ejemplo: Hoy, 19 de mayo de 2025, de 22:00 (10 PM) a 22:30 (10:30 PM)
+  const SIMULACRO_START_TIME = new Date("2025-05-19T22:00:00");
+  const SIMULACRO_END_TIME = new Date("2025-05-19T22:30:00");
+
+  const [simulacroAvailabilityStatus, setSimulacroAvailabilityStatus] = useState(''); // 'proximo', 'disponible', 'finalizado'
+  const [remainingUntilSimulacroStart, setRemainingUntilSimulacroStart] = useState(0); // En segundos
+
+  // --- NUEVO useEffect para gestionar la disponibilidad del simulacro por horas fijas ---
+  useEffect(() => {
+    let intervalId;
+
+    const updateSimulacroState = () => {
+      const now = new Date(); // Hora actual del cliente
+
+      if (now < SIMULACRO_START_TIME) {
+        // Simulacro aún no ha iniciado
+        setSimulacroAvailabilityStatus('proximo');
+        setRemainingUntilSimulacroStart(Math.max(0, Math.floor((SIMULACRO_START_TIME.getTime() - now.getTime()) / 1000)));
+        // Si el usuario estaba en la pantalla del simulacro antes de la hora de inicio
+        if (pantalla === "simulacro" && tipoPrueba === "simulacro") {
+          setTiempo(0);
+          setTiempoActivo(false); // Detener el temporizador activo
+        }
+      } else if (now >= SIMULACRO_START_TIME && now < SIMULACRO_END_TIME) {
+        // Simulacro está activo/disponible
+        setSimulacroAvailabilityStatus('disponible');
+        setRemainingUntilSimulacroStart(0); // Resetear el conteo hasta el inicio
+
+        if (pantalla === "simulacro" && tipoPrueba === "simulacro") {
+          // Si el usuario está en la pantalla del simulacro, activar el temporizador
+          const timeRemainingForTest = Math.max(0, Math.floor((SIMULACRO_END_TIME.getTime() - now.getTime()) / 1000));
+          // Solo actualizar 'tiempo' y 'tiempoInicial' si es necesario para evitar renders innecesarios
+          if (tiempo !== timeRemainingForTest) {
+            setTiempo(timeRemainingForTest);
+            setTiempoInicial(timeRemainingForTest); // 'tiempoInicial' es para la barra de progreso
+          }
+          setTiempoActivo(true);
+        } else {
+          setTiempoActivo(false); // El temporizador no está activo si no está en la pantalla del simulacro
+        }
+      } else {
+        // Simulacro ya ha finalizado
+        setSimulacroAvailabilityStatus('finalizado');
+        setRemainingUntilSimulacroStart(0);
+        setTiempoActivo(false); // Detener cualquier temporizador activo
+        setTiempo(0); // Poner el tiempo a cero
+
+        // Si el usuario estaba realizando el simulacro y este acaba de finalizar por tiempo
+        if (pantalla === "simulacro" && tipoPrueba === "simulacro") {
+          // Asegurarse de llamar a finalizarPrueba() solo una vez
+          if (resultadosTemporales === null) {
+            finalizarPrueba();
+          }
+        }
+      }
+    };
+
+    // Ejecutar la verificación inmediatamente y luego cada segundo
+    checkSimulacroAvailability();
+    intervalId = setInterval(updateSimulacroState, 1000);
+
+    // Limpiar el intervalo cuando el componente se desmonte o las dependencias cambien
+    return () => clearInterval(intervalId);
+  }, [pantalla, tipoPrueba, tiempo, resultadosTemporales]); // tiempo y resultadosTemporales son clave para evitar bucles o llamadas múltiples a finalizarPrueba
+
+
+  // --- useEffect existente para la cuenta regresiva del tiempo ---
   useEffect(() => {
     let intervalo;
     if (tiempoActivo && tiempo > 0) {
+      // Si el tiempo está activo y es mayor que 0, decrementa cada segundo
       intervalo = setInterval(() => {
         setTiempo((tiempoAnterior) => tiempoAnterior - 1);
       }, 1000);
-    } else if (tiempo === 0 && tiempoInicial > 0) {
+    } else if (tiempo === 0 && tiempoInicial > 0 && pantalla === "simulacro" && tipoPrueba === "diagnostico") {
+      // Esta condición es para la PRUEBA DE DIAGNÓSTICO cuando su temporizador interno se agota.
+      // La finalización del SIMULACRO por tiempo fijo se maneja en el otro useEffect.
       finalizarPrueba();
     }
 
     return () => clearInterval(intervalo);
-  }, [tiempoActivo, tiempo, tiempoInicial]); // Added tiempoInicial to dependencies
+  }, [tiempoActivo, tiempo, tiempoInicial, pantalla, tipoPrueba]);
 
-  useEffect(() => {
-    if (window.MathJax && preguntas.length > 0 && pantalla === "simulacro") { // Ensure MathJax runs only when questions are visible
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado en simulacro"))
-        .catch((err) => console.error("MathJax error en simulacro:", err));
-    }
-  }, [preguntaActual, preguntas, pantalla]); // Added pantalla to dependencies
 
-  useEffect(() => {
-    if (pantalla === "resultados" && window.MathJax) {
-      window.MathJax.typesetPromise()
-        .then(() => console.log("MathJax renderizado en resultados"))
-        .catch((err) => console.error("MathJax error en resultados:", err));
-    }
-  }, [pantalla]);
+  const finalizarPrueba = async () => {
+    setTiempoActivo(false); // Detiene el temporizador
+    setTiempo(0); // Asegura que el tiempo se muestre como 0
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setDatosUsuario({
-      ...datosUsuario,
-      [name]: value
-    });
-  };
+    let correctas = 0;
+    let incorrectas = 0;
+    let sinResponder = 0;
+    let notaTotal = 0; // Solo para diagnóstico
 
-  const validarFormulario = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return datosUsuario.nombre.trim() !== "" && emailRegex.test(datosUsuario.correo);
-  };
+    const respuestasEnviadas = {}; // Para guardar las respuestas para el backend del simulacro
 
-  const obtenerOrdenCurso = (curso) => {
-    const ordenCursos = {
-      "RM": 1,
-      "Aritmética": 2,
-      "Álgebra": 3, // Corrected from "Algebra" if your data uses "Álgebra"
-      "Geometría": 4,
-      "Trigonometría": 5,
-      "Física": 6,
-      "Química": 7,
-      "RV": 8 // Added RV if it's a course type
-    };
-    return ordenCursos[curso] || 999;
-  };
-    
-  const iniciarDiagnostico = async () => {
-    setTipoPrueba("diagnostico");
-    setCargando(true);
-    setRespuestas({});
-    setResultados({});
-    setPreguntaActual(0);
-    setTiempo(40 * 60);
-    setTiempoInicial(40 * 60);
-    setTiempoActivo(true);
-    setPantalla("simulacro");
-    
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/diagnostico", {
-        params: { 
-          num_preguntas: 10 // This param might not be used by your current backend endpoint for diagnostico
+    preguntas.forEach((pregunta) => {
+      const respuestaSeleccionada = respuestas[pregunta.id_pregunta];
+      respuestasEnviadas[pregunta.id_pregunta] = respuestaSeleccionada || null; // Guarda null si no respondió
+
+      if (respuestaSeleccionada === pregunta.respuesta_correcta) {
+        correctas++;
+        if (tipoPrueba === "diagnostico") {
+          notaTotal += pregunta.puntaje;
         }
-      });
-      if (response.data && response.data.length > 0) {
-        // For diagnostico, if you expect a limited number of questions (e.g., 10), you might need to slice or ensure the backend sends only 10.
-        // The current backend /diagnostico returns all questions.
-        // If you want to randomly select 10 or take the first 10 after sorting:
-        let preguntasObtenidas = [...response.data].sort((a, b) => {
-            return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
-        });
-        // Slice if you need exactly 10 for a diagnostic.
-        // For this example, I'll assume you want to use a specific number, e.g., the first 10 after sorting.
-        // If your backend /diagnostico already limits to 10, this slicing is not needed.
-        // For now, I'll use all returned for diagnostico as per backend logic, but typically it's a subset.
-        setPreguntas(preguntasObtenidas.slice(0,10)); // Example: take first 10
+      } else if (respuestaSeleccionada) {
+        incorrectas++;
       } else {
-        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("inicio");
+        sinResponder++;
       }
-    } catch (error) {
-      console.error("Error al obtener preguntas de diagnóstico:", error);
-      alert("Error al cargar las preguntas de diagnóstico. Por favor, intenta de nuevo.");
-      setPantalla("inicio");
-    } finally {
-      setCargando(false);
+    });
+
+    const resultadosCalculados = {
+      correctas,
+      incorrectas,
+      sinResponder,
+      notaTotal: tipoPrueba === "diagnostico" ? notaTotal : null, // Nota solo para diagnóstico
+      tiempoUsado: tiempoInicial - tiempo, // Tiempo usado
+      respuestas: respuestasEnviadas // Respuestas brutas para el simulacro
+    };
+
+    setResultadosTemporales(resultadosCalculados); // Guarda los resultados temporalmente
+
+    // Comentario según el tipo de prueba
+    if (tipoPrueba === "diagnostico") {
+      if (notaTotal >= 1500) {
+        setComentarioResultado("¡Excelente desempeño! Has demostrado un gran dominio en las áreas evaluadas. ¡Sigue así!");
+      } else if (notaTotal >= 1000) {
+        setComentarioResultado("Buen resultado, pero hay áreas donde puedes mejorar. ¡Repasa los temas y sigue practicando!");
+      } else {
+        setComentarioResultado("Necesitas reforzar varios conceptos. ¡No te desanimes! Con estudio y práctica constante, mejorarás.");
+      }
+    } else if (tipoPrueba === "simulacro") {
+      setComentarioResultado("¡Simulacro completado con éxito! Hemos registrado tus respuestas y calcularemos tu puntaje. Los resultados detallados serán enviados a tu correo.");
     }
+
+    setPantalla("formulario"); // Ir a la pantalla del formulario
   };
 
-  const iniciarSimulacro = async () => {
-    setTipoPrueba("simulacro");
+  const iniciarPrueba = async (tipo) => {
+    setTipoPrueba(tipo);
     setCargando(true);
-    setRespuestas({});
-    setResultados({});
-    setPreguntaActual(0);
-    setTiempo(120 * 60);
-    setTiempoInicial(120 * 60);
-    setTiempoActivo(true);
-    setPantalla("simulacro");
-    
-    try {
-      const response = await axios.get("https://mi-proyecto-fastapi.onrender.com/simulacro");
-      if (response.data && response.data.length > 0) {
-        const preguntasOrdenadas = [...response.data].sort((a, b) => {
-          return obtenerOrdenCurso(a.curso) - obtenerOrdenCurso(b.curso);
-        });
-        setPreguntas(preguntasOrdenadas);
-      } else {
-        alert("No se pudieron cargar suficientes preguntas. Intenta nuevamente.");
-        setPantalla("inicio");
+
+    let apiUrl = "";
+    let duration = 0;
+
+    if (tipo === "diagnostico") {
+      apiUrl = "http://127.0.0.1:8000/diagnostico/";
+      duration = 20 * 60; // 20 minutos para diagnóstico
+      setTiempoInicial(duration); // Establecer tiempo inicial
+      setTiempo(duration); // Establecer tiempo actual
+      setTiempoActivo(true); // Activar temporizador
+    } else if (tipo === "simulacro") {
+      // Verificar la disponibilidad del simulacro por horas fijas
+      if (simulacroAvailabilityStatus === 'proximo') {
+        alert(`El simulacro aún no ha comenzado. Faltan ${Math.ceil(remainingUntilSimulacroStart / 60)} minutos para que inicie.`);
+        setCargando(false);
+        return;
       }
+      if (simulacroAvailabilityStatus === 'finalizado') {
+        alert('El simulacro ya ha finalizado y no está disponible para iniciar.');
+        setCargando(false);
+        return;
+      }
+      // Si está 'disponible', proceder. 'tiempo' ya está siendo actualizado por el useEffect de horas fijas.
+      apiUrl = "http://127.0.0.1:8000/simulacro/";
+      // Para el simulacro, 'duration' al iniciar es el 'tiempo' restante hasta la hora de fin fija
+      duration = tiempo; // `tiempo` ya tiene el valor correcto desde el useEffect
+      setTiempoInicial(duration); // Usar este tiempo para la barra de progreso
+      // setTiempoActivo(true) se maneja automáticamente por el useEffect cuando el simulacro está 'disponible' y en pantalla 'simulacro'
+    } else {
+      console.error("Tipo de prueba desconocido:", tipo);
+      setCargando(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(apiUrl);
+      setPreguntas(response.data);
+      setPreguntaActual(0);
+      setRespuestas({});
+      setResultados({}); // Limpiar resultados anteriores
+      setResultadosTemporales(null); // Asegurarse de que no haya resultados temporales
+      setPantalla("simulacro"); // Ir a la pantalla del simulacro
     } catch (error) {
-      console.error("Error al obtener preguntas de simulacro:", error);
-      alert("Error al cargar las preguntas de simulacro. Por favor, intenta de nuevo.");
+      console.error("Error al cargar las preguntas:", error);
+      alert("No se pudieron cargar las preguntas. Inténtalo de nuevo más tarde.");
       setPantalla("inicio");
     } finally {
       setCargando(false);
     }
   };
 
-  const seleccionarRespuesta = (ejercicioId, letra) => { // Changed 'ejercicio' to 'ejercicioId' for clarity
+
+  const handleRespuestaChange = (preguntaId, valor) => {
     setRespuestas((prevRespuestas) => ({
       ...prevRespuestas,
-      [ejercicioId]: letra,
+      [preguntaId]: valor
     }));
   };
 
@@ -168,155 +236,133 @@ function App() {
     }
   };
 
-  const calcularPuntajePorCurso = (curso) => {
-    switch (curso) {
-      case "RM":
-      case "RV":
-        return 0.63;
-      case "Aritmética":
-      case "Álgebra":
-      case "Geometría":
-      case "Trigonometría":
-        return 0.76;
-      case "Física":
-        return 0.81;
-      case "Química":
-        return 0.46;
-      default:
-        return 0.7; // Default score
-    }
-  };
+  const handleSubmitDatosUsuario = async (e) => {
+    e.preventDefault();
+    setCargando(true);
 
-  const obtenerComentario = (notaVigesimal) => {
+    const { nombre, correo } = datosUsuario;
+    let endpoint = "";
+    let payload = {};
+
     if (tipoPrueba === "diagnostico") {
-      if (notaVigesimal < 10) {
-        return "Es necesario fortalecer tu base para el examen de admisión a la UNI. Te animamos a practicar con dedicación y a revisar los conceptos fundamentales.";
-      } else if (notaVigesimal < 14) {
-        return "Tienes potencial para lograr el ingreso a la UNI, pero se requiere mayor consistencia. Identifica tus áreas de oportunidad y trabaja intensamente en ellas.";
-      } else if (notaVigesimal < 18) {
-        return "¡Vas por buen camino! Estás demostrando un buen nivel de preparación. Continúa practicando para afianzar tus conocimientos y aumentar tus posibilidades de éxito.";
-      } else {
-        return "¡Excelente desempeño! Tu preparación te posiciona para competir por los primeros puestos. ¡Sigue así y alcanzarás tus metas!";
-      }
-    } else { // simulacro
-      return "Los resultados detallados de tu simulacro serán enviados a tu correo electrónico. Revisa tu bandeja de entrada en las próximas horas.";
-    }
-  };
-
-  const finalizarPrueba = () => {
-    setTiempoActivo(false);
-    
-    let nuevosResultados = {};
-    let preguntasCorrectas = 0;
-    let preguntasIncorrectas = 0;
-    let preguntasSinResponder = 0;
-    let notaTotal = 0;
-
-    preguntas.forEach((pregunta) => {
-      // Assuming 'pregunta.ejercicio' is a unique identifier for the question
-      // If not, you might need to use index or another unique ID.
-      // For this example, I'll assume 'pregunta.ejercicio' (the text itself) is used as key,
-      // or better, if each question had a unique 'id' property.
-      // Let's use 'pregunta.ejercicio' as key as per your original 'seleccionarRespuesta'
-      const ejercicioId = pregunta.ejercicio; // Or a proper pregunta.id if available
-      const respuestaUsuario = respuestas[ejercicioId];
-      
-      if (!respuestaUsuario) {
-        nuevosResultados[ejercicioId] = "Sin responder";
-        preguntasSinResponder++;
-      } else if (respuestaUsuario === pregunta.respuesta_correcta) {
-        nuevosResultados[ejercicioId] = "Correcta";
-        preguntasCorrectas++;
-        notaTotal += calcularPuntajePorCurso(pregunta.curso);
-      } else {
-        nuevosResultados[ejercicioId] = `Incorrecta (Respuesta correcta: ${pregunta.respuesta_correcta})`;
-        preguntasIncorrectas++;
-      }
-    });
-
-    const porcentaje = preguntas.length > 0 ? (preguntasCorrectas / preguntas.length) * 100 : 0;
-    notaTotal = Math.min(notaTotal, 20); // Cap at 20
-    const tiempoUsado = tiempoInicial - tiempo;
-
-    setResultadosTemporales({
-      detalles: nuevosResultados,
-      correctas: preguntasCorrectas,
-      incorrectas: preguntasIncorrectas,
-      sinResponder: preguntasSinResponder,
-      porcentaje: porcentaje,
-      notaVigesimal: notaTotal,
-      tiempoUsado: tiempoUsado,
-      respuestas: respuestas // Save the raw user answers
-    });
-
-    setComentarioResultado(obtenerComentario(notaTotal));
-    setPantalla("formulario");
-  };
-
-  const procesarFormulario = async () => {
-    if (!validarFormulario()) {
-      alert("Por favor, completa correctamente todos los campos del formulario");
-      return;
-    }
-
-    setResultados(resultadosTemporales); // Move results to permanent state
-    
-    try {
-      const endpoint = tipoPrueba === "diagnostico" 
-        ? "https://mi-proyecto-fastapi.onrender.com/guardar-diagnostico" 
-        : "https://mi-proyecto-fastapi.onrender.com/guardar-simulacro";
-
-      const dataToSend = {
-        nombre: datosUsuario.nombre,
-        correo: datosUsuario.correo,
-        resultado: resultadosTemporales.notaVigesimal,
+      endpoint = "http://127.0.0.1:8000/guardar-diagnostico/";
+      payload = {
+        nombre: nombre,
+        correo: correo,
+        resultado: resultadosTemporales.notaTotal,
+        preguntas_correctas: resultadosTemporales.correctas,
+        preguntas_incorrectas: resultadosTemporales.incorrectas,
+        preguntas_sin_responder: resultadosTemporales.sinResponder,
+        tiempo_usado: resultadosTemporales.tiempoUsado
+      };
+    } else if (tipoPrueba === "simulacro") {
+      endpoint = "http://127.0.0.1:8000/guardar-simulacro/";
+      payload = {
+        nombre: nombre,
+        correo: correo,
+        resultado: resultadosTemporales.correctas, // Puedes ajustar esto a la nota del simulacro si tu backend la calcula
         preguntas_correctas: resultadosTemporales.correctas,
         preguntas_incorrectas: resultadosTemporales.incorrectas,
         preguntas_sin_responder: resultadosTemporales.sinResponder,
         tiempo_usado: resultadosTemporales.tiempoUsado,
-        // For simulacro, your backend expects 'respuestas' as a JSON string
-        ...(tipoPrueba === "simulacro" && { respuestas: JSON.stringify(resultadosTemporales.respuestas) })
+        respuestas: JSON.stringify(resultadosTemporales.respuestas) // Envía las respuestas como JSON string
       };
-      
-      console.log("Datos a enviar:", dataToSend);
-      const response = await axios.post(endpoint, dataToSend);
-      console.log("Respuesta del servidor:", response.data);
-
-    } catch (error) {
-      console.error("Error al guardar el resultado:", error.response ? error.response.data : error.message);
-      alert("Hubo un error al guardar tus resultados. Por favor intenta nuevamente.");
     }
-    
-    setPantalla("resultados");
+
+    try {
+      await axios.post(endpoint, payload);
+      setResultados(resultadosTemporales); // Guardar resultados finales para mostrar
+      setPantalla("resultados"); // Ir a la pantalla de resultados
+    } catch (error) {
+      console.error("Error al guardar los resultados:", error);
+      alert("Hubo un error al guardar tus resultados. Inténtalo de nuevo.");
+      setPantalla("resultados"); // Aún así, intentar mostrar resultados si no se pudo guardar
+    } finally {
+      setCargando(false);
+    }
   };
 
-  const formatoTiempo = (segundos) => {
-    const minutos = Math.floor(segundos / 60);
-    const segundosRestantes = segundos % 60;
-    return `${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
   };
+
+  const getProgresoPorcentaje = () => {
+    if (tiempoInicial === 0) return 0;
+    return ((tiempoInicial - tiempo) / tiempoInicial) * 100;
+  };
+
+
+  if (cargando) {
+    return (
+      <div className="container cargando-container">
+        <div className="spinner"></div>
+        <p>Cargando preguntas...</p>
+      </div>
+    );
+  }
 
   if (pantalla === "inicio") {
     return (
       <div className="container inicio-container">
-        <h1>EDBOT<br />Preparación preuniversitaria implementada con IA</h1>
+        <h1>Bienvenido a la Plataforma de Admisión</h1>
         <div className="inicio-content">
           <div className="columnas-inicio">
+            {/* Columna de Diagnóstico */}
             <div className="columna-prueba card-estilo">
-              <h2>Prueba de diagnóstico</h2>
-              <p>Esta prueba de diagnóstico contiene 10 ejercicios seleccionados de exámenes de admisión a la Universidad Nacional de Ingeniería (UNI), que te permitirán evaluar tu nivel de preparación.</p>
-              <p>Dispondrás de 40 minutos para resolverlos.</p>
-              <button className="boton-iniciar" onClick={iniciarDiagnostico} disabled={cargando}>
-                Comenzar diagnóstico
+              <h2>Prueba de Diagnóstico</h2>
+              <p>
+                Evalúa tus conocimientos en las áreas clave y descubre tus
+                fortalezas y debilidades. Duración: 20 minutos.
+              </p>
+              <button
+                className="boton-iniciar"
+                onClick={() => iniciarPrueba("diagnostico")}
+              >
+                Iniciar Prueba Diagnóstica
               </button>
             </div>
-            
+
+            {/* Columna de Simulacro */}
             <div className="columna-prueba card-estilo">
               <h2>Simulacro</h2>
-              <p>Este simulacro completo contiene 30 ejercicios similares a los del examen de admisión de la UNI, que te permitirán evaluar tu nivel de preparación en condiciones reales.</p>
-              <p>Dispondrás de 2 horas para resolverlos (tiempo real del examen).</p>
-              <button className="boton-iniciar" onClick={iniciarSimulacro} disabled={cargando}>
-                Comenzar simulacro
+              <p>
+                Simula un examen de admisión real con un tiempo y formato definidos.
+                ¡Prepárate para la presión!
+              </p>
+              <p>
+                **Horario del Simulacro:**
+                <br />
+                Del {SIMULACRO_START_TIME.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}
+                <br />
+                al {SIMULACRO_END_TIME.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}
+              </p>
+
+              {simulacroAvailabilityStatus === 'proximo' && (
+                <p className="formulario-info" style={{ color: '#007bff', fontWeight: 'bold' }}>
+                  El simulacro comenzará en: {Math.floor(remainingUntilSimulacroStart / 3600)}h {Math.floor((remainingUntilSimulacroStart % 3600) / 60)}m {remainingUntilSimulacroStart % 60}s
+                </p>
+              )}
+              {simulacroAvailabilityStatus === 'finalizado' && (
+                <p className="formulario-info" style={{ color: '#dc3545', fontWeight: 'bold' }}>
+                  El simulacro ya ha finalizado y no está disponible.
+                </p>
+              )}
+              {simulacroAvailabilityStatus === 'disponible' && (
+                <p className="formulario-info" style={{ color: '#28a745', fontWeight: 'bold' }}>
+                  ¡El simulacro está activo ahora! Tienes hasta las {SIMULACRO_END_TIME.toLocaleTimeString('es-ES', { timeStyle: 'short' })}.
+                </p>
+              )}
+
+              <button
+                className="boton-iniciar"
+                onClick={() => iniciarPrueba("simulacro")}
+                disabled={simulacroAvailabilityStatus !== 'disponible'}
+              >
+                Iniciar Simulacro
               </button>
             </div>
           </div>
@@ -324,241 +370,205 @@ function App() {
       </div>
     );
   }
-  
+
+  if (pantalla === "simulacro") {
+    const pregunta = preguntas[preguntaActual];
+    if (!pregunta) {
+      return (
+        <div className="container cargando-container">
+          <p>Cargando preguntas...</p>
+        </div>
+      );
+    }
+    const progresoPorcentaje = getProgresoPorcentaje();
+
+    return (
+      <div className="container simulacro-container">
+        <div className="encabezado-simulacro">
+          <div className="progreso">
+            <p className="texto-progreso">
+              Pregunta: {preguntaActual + 1} de {preguntas.length}
+            </p>
+            <div className="barra-progreso">
+              <div
+                className="progreso-completado"
+                style={{ width: `${progresoPorcentaje}%` }}
+              ></div>
+            </div>
+          </div>
+          <div className="temporizador">Tiempo: {formatTime(tiempo)}</div>
+        </div>
+
+        <div className="pregunta-container card-estilo">
+          <div
+            className="ejercicio-texto"
+            dangerouslySetInnerHTML={{ __html: pregunta.enunciado }}
+          />
+          {pregunta.imagen_url && (
+            <img
+              src={pregunta.imagen_url}
+              alt="Ejercicio"
+              className="imagen-ejercicio"
+            />
+          )}
+          <ul className="opciones-lista">
+            {pregunta.alternativas.map((alternativa, index) => (
+              <li
+                key={index}
+                className={`opcion ${
+                  respuestas[pregunta.id_pregunta] === alternativa.letra
+                    ? "seleccionada"
+                    : ""
+                }`}
+              >
+                <label>
+                  <input
+                    type="radio"
+                    name={`pregunta-${pregunta.id_pregunta}`}
+                    value={alternativa.letra}
+                    checked={
+                      respuestas[pregunta.id_pregunta] === alternativa.letra
+                    }
+                    onChange={() =>
+                      handleRespuestaChange(pregunta.id_pregunta, alternativa.letra)
+                    }
+                  />
+                  <span className="letra-alternativa">
+                    {alternativa.letra})
+                  </span>
+                  <span
+                    className="texto-alternativa"
+                    dangerouslySetInnerHTML={{ __html: alternativa.texto }}
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="controles-navegacion">
+          <button
+            className="boton-nav"
+            onClick={preguntaAnterior}
+            disabled={preguntaActual === 0}
+          >
+            Anterior
+          </button>
+          {preguntaActual < preguntas.length - 1 ? (
+            <button className="boton-nav" onClick={siguientePregunta}>
+              Siguiente
+            </button>
+          ) : (
+            <button className="boton-finalizar" onClick={finalizarPrueba}>
+              Finalizar Prueba
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (pantalla === "formulario") {
     return (
       <div className="container formulario-container">
-        <h1>{tipoPrueba === "diagnostico" ? "¡Prueba completada!" : "¡Simulacro completado!"}</h1>
         <div className="formulario-content card-estilo">
-          <p>Por favor, completa tus datos para {tipoPrueba === "diagnostico" ? "ver tus resultados" : "recibir tus resultados por correo"}:</p>
-          
-          <form className="formulario-registro" onSubmit={(e) => e.preventDefault()}>
+          <h1>¡Prueba Completada!</h1>
+          <p>
+            Por favor, ingresa tus datos para ver tus resultados y recibir
+            información detallada.
+          </p>
+          <form className="formulario-registro" onSubmit={handleSubmitDatosUsuario}>
             <div className="campo-formulario">
-              <label htmlFor="nombre">Nombre completo:</label>
-              <input 
-                type="text" 
-                id="nombre" 
-                name="nombre" 
+              <label htmlFor="nombre">Nombre Completo:</label>
+              <input
+                type="text"
+                id="nombre"
                 value={datosUsuario.nombre}
-                onChange={handleInputChange}
-                placeholder="Ingresa tu nombre completo"
+                onChange={(e) =>
+                  setDatosUsuario({ ...datosUsuario, nombre: e.target.value })
+                }
                 required
               />
             </div>
-            
             <div className="campo-formulario">
-              <label htmlFor="correo">Correo electrónico:</label>
-              <input 
-                type="email" 
-                id="correo" 
-                name="correo" 
+              <label htmlFor="correo">Correo Electrónico:</label>
+              <input
+                type="email"
+                id="correo"
                 value={datosUsuario.correo}
-                onChange={handleInputChange}
-                placeholder="Ingresa tu correo electrónico"
+                onChange={(e) =>
+                  setDatosUsuario({ ...datosUsuario, correo: e.target.value })
+                }
                 required
               />
             </div>
-            
-            <div className="formulario-info">
-              <p>Estos datos nos permitirán {tipoPrueba === "diagnostico" ? "mostrarte tus resultados y recomendaciones" : "enviarte los resultados detallados de tu simulacro"}.</p>
-            </div>
-            
-            <button 
-              type="button" 
-              className="boton-ver-resultados" 
-              onClick={procesarFormulario} 
-              disabled={!validarFormulario() || cargando}
-            >
-              {cargando ? "Procesando..." : (tipoPrueba === "diagnostico" ? "Ver mis resultados" : "Enviar mis resultados")}
+            <p className="formulario-info">
+              Al hacer clic en "Ver mis resultados", aceptas recibir tu
+              desempeño por correo electrónico y futuras comunicaciones de
+              nuestra plataforma.
+            </p>
+            <button type="submit" className="boton-ver-resultados">
+              Ver mis Resultados
             </button>
           </form>
         </div>
       </div>
     );
   }
-  
-  if (pantalla === "simulacro" && preguntas.length > 0) {
-    const pregunta = preguntas[preguntaActual];
-    // Ensure 'pregunta' and 'pregunta.ejercicio' are defined before rendering
-    if (!pregunta || typeof pregunta.ejercicio === 'undefined') {
-        return (
-            <div className="container cargando-container">
-              <div className="spinner"></div>
-              <p>Error: No se pudo cargar la pregunta actual.</p>
-            </div>
-        );
-    }
-    const ejercicioId = pregunta.ejercicio; // Or a unique ID like pregunta.id
 
-    return (
-      <div className="container simulacro-container">
-        <div className="encabezado-simulacro">
-          <div className="progreso">
-            <div className="texto-progreso">Pregunta: {preguntaActual + 1} de {preguntas.length}</div>
-            <div className="barra-progreso">
-              <div 
-                className="progreso-completado" 
-                style={{ width: `${((preguntaActual + 1) / preguntas.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-          <div className="temporizador">⏱️ {formatoTiempo(tiempo)}</div>
-        </div>
-        
-        <div className="pregunta-container card-estilo" key={ejercicioId}> {/* Use unique key */}
-          <h2 className="ejercicio-texto">
-            <span dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></span>
-          </h2>
-
-          {pregunta.imagen && (
-            <img src={pregunta.imagen} alt={`Imagen para ${pregunta.ejercicio.substring(0,50)}`} className="imagen-ejercicio" />
-          )}
-
-          <ul className="opciones-lista">
-            {pregunta.alternativas.map((alt) => (
-              <li key={alt.letra} className="opcion">
-                <label>
-                  <input
-                    type="radio"
-                    name={`pregunta-${ejercicioId}`} // Use unique name for radio group per question
-                    value={alt.letra}
-                    checked={respuestas[ejercicioId] === alt.letra}
-                    onChange={() => seleccionarRespuesta(ejercicioId, alt.letra)}
-                  />
-                  <span className="letra-alternativa">{alt.letra})</span>
-                  <span className="texto-alternativa" dangerouslySetInnerHTML={{ __html: alt.texto }}></span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className="controles-navegacion">
-          <button 
-            className="boton-nav" 
-            onClick={preguntaAnterior} 
-            disabled={preguntaActual === 0}
-          >
-            Anterior
-          </button>
-          
-          {preguntaActual === preguntas.length - 1 ? (
-            <button className="boton-finalizar" onClick={finalizarPrueba}>
-              Finalizar {tipoPrueba === "diagnostico" ? "prueba" : "simulacro"}
-            </button>
-          ) : (
-            <button 
-              className="boton-nav" 
-              onClick={siguientePregunta}
-            >
-              Siguiente
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
   if (pantalla === "resultados") {
-    // Ensure results object exists
+    // Asegurarse de que resultados estén cargados antes de renderizar
     if (!resultados || Object.keys(resultados).length === 0) {
-      // This might happen if procesarFormulario hasn't finished or there was an error
-      // You could show a loading state or an error message
-      // For now, let's assume `resultadosTemporales` can be displayed if `resultados` is empty.
-      // Or redirect to form if `resultadosTemporales` is also null.
-      if(!resultadosTemporales) {
-        setPantalla("formulario"); // Or inicio
-        return null; // Avoid rendering anything
-      }
-      // If you want to display from resultadosTemporales directly after form
-      // you might not need 'resultados' state, or ensure 'setResultados' is called and completed.
-      // For this, we'll use 'resultados' as intended.
-      // If `resultados` is not populated yet (e.g. async issue), show loading or error:
-        return (
-            <div className="container cargando-container">
-                <div className="spinner"></div>
-                <p>Cargando resultados...</p>
-            </div>
-        );
+      return (
+        <div className="container cargando-container">
+          <p>Cargando resultados...</p>
+        </div>
+      );
     }
+
+    const { correctas, incorrectas, sinResponder, notaTotal, tiempoUsado } = resultados;
 
     return (
       <div className="container resultados-container card-estilo">
-        <h1>{tipoPrueba === "diagnostico" ? "Resultados del Diagnóstico" : "Simulacro Completado"}</h1>
-        
+        <h1>Resultados de la {tipoPrueba === "diagnostico" ? "Prueba de Diagnóstico" : "Simulacro"}</h1>
+
         <div className="datos-usuario">
           <p><strong>Nombre:</strong> {datosUsuario.nombre}</p>
           <p><strong>Correo:</strong> {datosUsuario.correo}</p>
-          {resultados.tiempoUsado !== undefined && <p><strong>Tiempo utilizado:</strong> {formatoTiempo(resultados.tiempoUsado)}</p>}
         </div>
-        
-        {tipoPrueba === "diagnostico" && (
-          <>
-            <div className="resumen-resultados">
-              <div className="estadistica correcta">
-                <div className="valor">{resultados.correctas}</div>
-                <div className="etiqueta">Correctas</div>
-              </div>
-              <div className="estadistica incorrecta">
-                <div className="valor">{resultados.incorrectas}</div>
-                <div className="etiqueta">Incorrectas</div>
-              </div>
-              <div className="estadistica">
-                <div className="valor">{resultados.sinResponder}</div>
-                <div className="etiqueta">Sin responder</div>
-              </div>
-              <div className="estadistica">
-                <div className="valor">{resultados.notaVigesimal !== undefined ? resultados.notaVigesimal.toFixed(1) : 'N/A'}</div>
-                <div className="etiqueta">Nota (0-20)</div>
-              </div>
-            </div>
-            
-            <div className="comentario-resultado">
-              <h2>Evaluación de tu desempeño</h2>
-              <p>{comentarioResultado}</p>
-            </div>
-            
-            <h2>Detalle de respuestas</h2>
-            <div className="lista-detalles">
-              {preguntas.map((pregunta, index) => {
-                const ejercicioId = pregunta.ejercicio; // Or a unique ID
-                const respuestaUsuario = resultados.respuestas && resultados.respuestas[ejercicioId]; // From saved responses
-                const estado = !respuestaUsuario 
-                                ? "sin-responder" 
-                                : respuestaUsuario === pregunta.respuesta_correcta 
-                                  ? "correcta" 
-                                  : "incorrecta";
 
-                return (
-                  <div 
-                    key={ejercicioId || index} // Use a unique key
-                    className={`detalle-pregunta ${estado}`}
-                  >
-                    <div className="numero-pregunta">{index + 1}</div>
-                    <div className="contenido-detalle">
-                      <div className="texto-ejercicio" dangerouslySetInnerHTML={{ __html: pregunta.ejercicio }}></div>
-                      <div className="respuesta-detalle">
-                        {!respuestaUsuario ? (
-                          <span className="estado-respuesta sin-responder">Sin responder</span>
-                        ) : respuestaUsuario === pregunta.respuesta_correcta ? (
-                          <span className="estado-respuesta correcta">
-                            Correcta: {pregunta.respuesta_correcta} ({calcularPuntajePorCurso(pregunta.curso)} pts)
-                          </span>
-                        ) : (
-                          <span className="estado-respuesta incorrecta">
-                            Incorrecta: Elegiste {respuestaUsuario}, 
-                            Correcta: {pregunta.respuesta_correcta}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
+        {tipoPrueba === "diagnostico" && (
+          <div className="comentario-resultado">
+            <h2>Comentario General</h2>
+            <p>{comentarioResultado}</p>
+          </div>
         )}
-        
+
+        <div className="resumen-resultados">
+          <div className="estadistica correcta">
+            <div className="valor">{correctas}</div>
+            <div className="etiqueta">Correctas</div>
+          </div>
+          <div className="estadistica incorrecta">
+            <div className="valor">{incorrectas}</div>
+            <div className="etiqueta">Incorrectas</div>
+          </div>
+          <div className="estadistica">
+            <div className="valor">{sinResponder}</div>
+            <div className="etiqueta">Sin Responder</div>
+          </div>
+          {tipoPrueba === "diagnostico" && (
+            <div className="estadistica">
+              <div className="valor">{notaTotal}</div>
+              <div className="etiqueta">Puntaje Total</div>
+            </div>
+          )}
+          <div className="estadistica">
+            <div className="valor">{formatTime(tiempoUsado)}</div>
+            <div className="etiqueta">Tiempo Usado</div>
+          </div>
+        </div>
+
         {tipoPrueba === "simulacro" && (
           <div className="comentario-resultado">
             <h2>¡Simulacro completado con éxito!</h2>
@@ -566,23 +576,30 @@ function App() {
             <p>Hemos registrado tus respuestas y calculado tu puntaje. Los resultados detallados, incluyendo tu desempeño por áreas y recomendaciones personalizadas, serán enviados a tu correo electrónico en las próximas horas.</p>
           </div>
         )}
-        
+
         <button className="boton-reiniciar" onClick={() => {
           setPantalla("inicio");
-          // Optionally reset states if needed for a fresh start
+          // Resetear todos los estados para una nueva prueba
           setPreguntas([]);
           setRespuestas({});
           setResultados({});
           setResultadosTemporales(null);
           setDatosUsuario({ nombre: "", correo: "" });
+          setTiempo(0);
+          setTiempoInicial(0);
+          setTiempoActivo(false);
+          setTipoPrueba("");
+          setComentarioResultado("");
+          setSimulacroAvailabilityStatus(''); // Resetear el estado de disponibilidad
+          setRemainingUntilSimulacroStart(0); // Resetear el conteo
         }}>
           Volver al inicio
         </button>
       </div>
     );
   }
-  
-  // Default loading screen or if pantalla state is unexpected
+
+  // Pantalla de carga por defecto o si el estado de pantalla es inesperado
   return (
     <div className="container cargando-container">
       <div className="spinner"></div>
