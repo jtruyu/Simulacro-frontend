@@ -3,10 +3,10 @@ import axios from "axios";
 import "./App.css";
 
 // Define target times for the simulacro (Peru time)
-const HORA_INICIO_SIMULACRO_HORA = 3; // 11 PM
-const HORA_INICIO_SIMULACRO_MINUTO = 30;
-const HORA_FIN_SIMULACRO_HORA = 3;    // 11 PM
-const HORA_FIN_SIMULACRO_MINUTO = 35;
+const HORA_INICIO_SIMULACRO_HORA = 0; // 11 PM
+const HORA_INICIO_SIMULACRO_MINUTO = 9;
+const HORA_FIN_SIMULACRO_HORA = 0;    // 11 PM
+const HORA_FIN_SIMULACRO_MINUTO = 14;
 
 function App() {
   const [preguntas, setPreguntas] = useState([]);
